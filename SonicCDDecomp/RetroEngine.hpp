@@ -30,6 +30,7 @@ typedef unsigned int uint;
 // Custom Platforms start here
 #define RETRO_VITA (7)
 #define RETRO_UWP  (8)
+#define RETRO_WII  (9)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -60,6 +61,8 @@ typedef unsigned int uint;
 #endif
 #elif defined __vita__
 #define RETRO_PLATFORM (RETRO_VITA)
+#elif defined __WII__
+#define RETRO_PLATFORM (RETRO_WII)
 #else
 #define RETRO_PLATFORM (RETRO_WIN) // Default
 #endif
@@ -72,6 +75,10 @@ typedef unsigned int uint;
 #define BASE_PATH            ""
 #define DEFAULT_SCREEN_XSIZE 424
 #define DEFAULT_FULLSCREEN   false
+#elif RETRO_PLATFORM == RETRO_WII
+#define BASE_PATH            "/SonicCD/"
+#define DEFAULT_SCREEN_XSIZE 424
+#define DEFAULT_FULLSCREEN   false
 #else
 #define BASE_PATH            ""
 #define DEFAULT_SCREEN_XSIZE 424
@@ -82,6 +89,9 @@ typedef unsigned int uint;
     || RETRO_PLATFORM == RETRO_UWP
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
+#elif RETRO_PLATFORM == RETRO_WII
+#define RETRO_USING_SDL1 (1)
+#define RETRO_USING_SDL2 (0)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
@@ -107,6 +117,8 @@ typedef unsigned int uint;
 
 // use *this* macro to determine what platform the game thinks its running on (since only the first 7 platforms are supported natively by scripts)
 #if RETRO_PLATFORM == RETRO_VITA
+#define RETRO_GAMEPLATFORMID (RETRO_WIN)
+#elif RETRO_PLATFORM == RETRO_WII
 #define RETRO_GAMEPLATFORMID (RETRO_WIN)
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORMID (UAP_GetRetroGamePlatformId())
@@ -170,15 +182,17 @@ enum RetroBytecodeFormat {
 #define SCREEN_YSIZE   (240)
 #define SCREEN_CENTERY (SCREEN_YSIZE / 2)
 
-#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP
+#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_WII
 #if RETRO_USING_SDL2
 #include <SDL.h>
 #elif RETRO_USING_SDL1
 #include <SDL.h>
 #endif
 #include <vorbis/vorbisfile.h>
+#if RETRO_PLATFORM != RETRO_WII
 #include <theora/theora.h>
 #include <theoraplay.h>
+#endif
 #elif RETRO_PLATFORM == RETRO_OSX
 #include <SDL2/SDL.h>
 #include <Vorbis/vorbisfile.h>

@@ -6,9 +6,11 @@ int videoWidth        = 0;
 int videoHeight       = 0;
 float videoAR         = 0;
 
+#if RETRO_PLATFORM != RETRO_WII
 THEORAPLAY_Decoder *videoDecoder;
 const THEORAPLAY_VideoFrame *videoVidData;
 THEORAPLAY_Io callbacks;
+#endif
 
 byte videoData    = 0;
 int videoFilePos  = 0;
@@ -17,24 +19,36 @@ int vidFrameMS    = 0;
 int vidBaseticks  = 0;
 
 bool videoSkipped = false;
-
+#if RETRO_PLATFORM == RETRO_WII
+static long videoRead(int *io, void *buf, long buflen)
+#else
 static long videoRead(THEORAPLAY_Io *io, void *buf, long buflen)
+#endif
 {
+#if RETRO_PLATFORM != RETRO_WII
     FileIO *file    = (FileIO *)io->userdata;
     const size_t br = fRead(buf, 1, buflen * sizeof(byte), file);
     if (br == 0)
         return -1;
     return (int)br;
+#endif
 } // IoFopenRead
 
+#if RETRO_PLATFORM == RETRO_WII
+static void videoClose(int *io)
+#else
 static void videoClose(THEORAPLAY_Io *io)
+#endif
 {
+#if RETRO_PLATFORM != RETRO_WII
     FileIO *file = (FileIO *)io->userdata;
     fClose(file);
+#endif
 }
 
 void PlayVideoFile(char *filePath)
 {
+#if RETRO_PLATFORM != RETRO_WII
     char filepath[0x100];
     StrCopy(filepath, BASE_PATH "videos/");
 
@@ -94,10 +108,12 @@ void PlayVideoFile(char *filePath)
     else {
         printLog("Couldn't find file '%s'!", filepath);
     }
+#endif
 }
 
 void UpdateVideoFrame()
 {
+#if RETRO_PLATFORM != RETRO_WII
     if (videoPlaying) {
         if (videoFrameCount > currentVideoFrame) {
             GFXSurface *surface = &gfxSurface[videoData];
@@ -146,10 +162,12 @@ void UpdateVideoFrame()
             CloseFile();
         }
     }
+#endif
 }
 
 int ProcessVideo()
 {
+#if RETRO_PLATFORM != RETRO_WII
     if (videoPlaying) {
         CheckKeyPress(&keyPress, 0x10);
 
@@ -223,12 +241,13 @@ int ProcessVideo()
             return 2; // its playing as expected
         }
     }
-
+#endif
     return 0; // its not even initialised
 }
 
 void StopVideoPlayback()
 {
+#if RETRO_PLATFORM != RETRO_WII
     if (videoPlaying) {
         // `videoPlaying` and `videoDecoder` are read by
         // the audio thread, so lock it to prevent a race
@@ -252,6 +271,7 @@ void StopVideoPlayback()
 
         SDL_UnlockAudio();
     }
+#endif
 }
 
 void SetupVideoBuffer(int width, int height)
