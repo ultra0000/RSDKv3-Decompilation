@@ -70,6 +70,9 @@ Even if your platform isn't supported by the official releases, you **must** buy
 * Ensure you have Docker installed and run the script `build.sh` from `SonicCD.Vita`. If you are on Windows, WSL2 is recommended.
 NOTE: You would need to copy Sonic CD game data into `ux0:data/SonicCD` to boot the game.
 
+## Wii:
+* Go to SonicCD.Wii and run "make"
+
 ## Other platforms:
 Currently the only "officially" supported platforms are the ones listed above, however the backend uses libogg, libvorbis, libtheora & SDL2 to power it, so the codebase is very multiplatform.
 If you've cloned this repo and ported it to a platform not on the list or made some changes you'd like to see added to this repo, submit a pull request and it'll most likely be added
