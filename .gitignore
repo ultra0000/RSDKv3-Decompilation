@@ -57,13 +57,31 @@ bin/
 #dependencies
 [Dd]ependencies/win-uwp/**
 [Dd]ependencies/windows/*
-[Dd]ependencies/mac/*
+[Dd]ependencies/android/*
+[Dd]ependencies/mac/libogg/
+[Dd]ependencies/mac/libtheora/
+[Dd]ependencies/mac/libvorbis/
+[Dd]ependencies/mac/SDL2.framework/
 ![Dd]ependencies/mac/[Ii]nfo.plist
-[Dd]ependencies/ios/*
+[Dd]ependencies/ios/Ogg.Framework/
+[Dd]ependencies/ios/Theora.framework/
+[Dd]ependencies/ios/Vorbis.framework/
+[Dd]ependencies/ios/SDL2.framework/
+[Dd]ependencies/ios/libSDLMain.a
+![Dd]ependencies/ios/[Ii]nfo.plist
+[Dd]ependencies/all/*
+![Dd]ependencies/all/tinyxml2
+![Dd]ependencies/all/dependencies.txt
+![Dd]ependencies/windows/dependencies.txt
+![Dd]ependencies/ios/dependencies.txt
+![Dd]ependencies/mac/dependencies.txt
+![Dd]ependencies/windows-uwp/dependencies.txt
+![Dd]ependencies/android/dependencies.txt
+![Dd]ependencies/android/libogg/include/ogg/config_types.h
 
-SonicCDDecompUWP/Generated Files
-SonicCDDecompUWP/BundleArtifacts
-SonicCDDecompUWP/Assets/*.png
+RSDKv3UWP/Generated Files
+RSDKv3UWP/BundleArtifacts
+RSDKv3UWP/Assets/*.png
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -255,3 +273,15 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 Ignored/
+
+# Android specific
+.gradle/
+.idea/
+android/key/
+android/local.properties
+*.apk
+
+# Linux
+.flatpak-builder
+flatpak/*.apk
+build-dir
