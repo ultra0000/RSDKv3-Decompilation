@@ -8,6 +8,10 @@
 #include <unistd.h>
 #endif
 
+#if RETRO_PLATFORM == RETRO_WII
+int DEFAULT_SCREEN_XSIZE = 320;
+#endif
+
 bool usingCWD        = false;
 bool engineDebugMode = false;
 byte renderType      = RENDER_SW;

@@ -484,8 +484,12 @@ void InitUserdata()
             Engine.scalingMode = 0;
         if (!ini.GetInteger("Window", "WindowScale", &Engine.windowScale))
             Engine.windowScale = 2;
+#if RETRO_PLATFORM == RETRO_WII
+        SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE;
+#else
         if (!ini.GetInteger("Window", "ScreenWidth", &SCREEN_XSIZE))
             SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE;
+#endif
         SCREEN_XSIZE_CONFIG = SCREEN_XSIZE;
         if (!ini.GetInteger("Window", "RefreshRate", &Engine.refreshRate))
             Engine.refreshRate = 60;

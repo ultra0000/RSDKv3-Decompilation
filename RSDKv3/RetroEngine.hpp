@@ -89,7 +89,7 @@ typedef unsigned int uint;
 #define DEFAULT_FULLSCREEN   true
 #elif RETRO_PLATFORM == RETRO_WII
 #define BASE_PATH            "/SonicCD/"
-#define DEFAULT_SCREEN_XSIZE 424
+extern int DEFAULT_SCREEN_XSIZE;
 #define DEFAULT_FULLSCREEN   true
 #elif RETRO_PLATFORM == RETRO_UWP
 #define BASE_PATH            ""
@@ -107,9 +107,13 @@ typedef unsigned int uint;
     || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
+#define RETRO_USING_SDL1_AUDIO (0)
+#define RETRO_USING_SDLMIXER   (0)
 #elif RETRO_PLATFORM == RETRO_WII
 #define RETRO_USING_SDL1 (1)
 #define RETRO_USING_SDL2 (0)
+#define RETRO_USING_SDL1_AUDIO (0)
+#define RETRO_USING_SDLMIXER   (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
@@ -297,6 +301,10 @@ enum RetroBytecodeFormat {
 #include <vorbis/vorbisfile.h>
 #include <theora/theora.h>
 #include <theoraplay.h>
+#endif
+
+#if RETRO_USING_SDLMIXER
+#include <SDL/SDL_mixer.h>
 #endif
 
 #if RETRO_PLATFORM == RETRO_ANDROID

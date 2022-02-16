@@ -25,7 +25,7 @@ INCLUDES	:=	../dependencies/all/tinyxml2
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= $(shell /opt/devkitpro/portlibs/wii/bin/powerpc-eabi-pkg-config --cflags --static vorbisfile vorbis) $(shell  /opt/devkitpro/portlibs/wii/bin/sdl-config --cflags) -g -O2 -Wall $(MACHDEP) $(INCLUDE) -D__WII__
+CFLAGS	= $(shell /opt/devkitpro/portlibs/wii/bin/powerpc-eabi-pkg-config --cflags --static vorbisfile vorbis SDL_mixer) $(shell  /opt/devkitpro/portlibs/wii/bin/sdl-config --cflags) -g -O2 -Wall $(MACHDEP) $(INCLUDE) -D__WII__
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -33,7 +33,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	$(shell  /opt/devkitpro/portlibs/wii/bin/powerpc-eabi-pkg-config --libs --static vorbisfile vorbis) $(shell  /opt/devkitpro/portlibs/wii/bin/sdl-config --libs) -lwiiuse -lbte -logc -lm
+LIBS	:=	$(shell  /opt/devkitpro/portlibs/wii/bin/powerpc-eabi-pkg-config --libs --static vorbisfile vorbis SDL_mixer) $(shell  /opt/devkitpro/portlibs/wii/bin/sdl-config --libs) -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

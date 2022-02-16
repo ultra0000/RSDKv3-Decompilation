@@ -445,6 +445,11 @@ void ProcessInput()
     u16 buttonsDown = WPAD_ButtonsDown(0);
     u16 buttonsHeld = WPAD_ButtonsHeld(0);
 
+    if (buttonsDown & WPAD_BUTTON_HOME) {
+        u16 buttonsDown = WPAD_ButtonsDown(0);
+        exit(0);
+    }
+
     if (buttonsDown)
         inputDevice[8].press = true;
     else
