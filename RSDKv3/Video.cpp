@@ -7,9 +7,11 @@ int videoWidth        = 0;
 int videoHeight       = 0;
 float videoAR         = 0;
 
+#if RETRO_PLATFORM != RETRO_WII
 THEORAPLAY_Decoder *videoDecoder;
 const THEORAPLAY_VideoFrame *videoVidData;
 THEORAPLAY_Io callbacks;
+#endif
 
 byte videoSurface    = 0;
 int videoFilePos  = 0;
@@ -19,6 +21,7 @@ int vidBaseticks  = 0;
 
 bool videoSkipped = false;
 
+#if RETRO_PLATFORM != RETRO_WII
 static long videoRead(THEORAPLAY_Io *io, void *buf, long buflen)
 {
     FileIO *file    = (FileIO *)io->userdata;
@@ -33,9 +36,11 @@ static void videoClose(THEORAPLAY_Io *io)
     FileIO *file = (FileIO *)io->userdata;
     fClose(file);
 }
+#endif
 
 void PlayVideoFile(char *filePath)
 {
+#if RETRO_PLATFORM != RETRO_WII
     char pathBuffer[0x100];
     int len = StrLength(filePath);
 
@@ -143,10 +148,12 @@ void PlayVideoFile(char *filePath)
     else {
         printLog("Couldn't find file '%s'!", filepath);
     }
+#endif
 }
 
 void UpdateVideoFrame()
 {
+#if RETRO_PLATFORM != RETRO_WII
     if (videoPlaying) {
         if (currentVideoFrame < videoFrameCount) {
             GFXSurface *surface = &gfxSurface[videoSurface];
@@ -198,10 +205,14 @@ void UpdateVideoFrame()
             CloseFile();
         }
     }
+#endif
 }
 
 int ProcessVideo()
 {
+#if RETRO_PLATFORM == RETRO_WII
+    return 0; 
+#else
     if (videoPlaying) {
         CheckKeyPress(&keyPress, 0xFF);
 
@@ -279,10 +290,12 @@ int ProcessVideo()
     }
 
     return 0; // its not even initialised
+#endif
 }
 
 void StopVideoPlayback()
 {
+#if RETRO_PLATFORM != RETRO_WII
     if (videoPlaying) {
         // `videoPlaying` and `videoDecoder` are read by
         // the audio thread, so lock it to prevent a race
@@ -306,6 +319,7 @@ void StopVideoPlayback()
 
         SDL_UnlockAudio();
     }
+#endif
 }
 
 void SetupVideoBuffer(int width, int height)

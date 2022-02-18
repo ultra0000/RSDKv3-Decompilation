@@ -22,7 +22,11 @@ struct TextMenu {
     ushort visibleRowOffset;
     byte alignment;
     byte selectionCount;
+#if RETRO_PLATFORM == RETRO_WII
+    signed char timer;
+#else
     sbyte timer;
+#endif
 };
 
 struct FontCharacter {

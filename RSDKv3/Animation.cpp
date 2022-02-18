@@ -70,8 +70,11 @@ void LoadAnimationFile(const char *filePath)
                 frame->width = fileBuffer;
                 FileRead(&fileBuffer, 1);
                 frame->height = fileBuffer;
-
+#if RETRO_PLATFORM == RETRO_WII
+                signed char buffer = 0;
+#else
                 sbyte buffer = 0;
+#endif
                 FileRead(&buffer, 1);
                 frame->pivotX = buffer;
                 FileRead(&buffer, 1);

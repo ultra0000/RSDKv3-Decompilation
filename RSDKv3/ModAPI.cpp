@@ -40,7 +40,11 @@ namespace fs = std::filesystem;
 fs::path resolvePath(fs::path given)
 {
     if (given.is_relative())
+#if RETRO_PLATFORM == RETRO_WII
+        given = "/SonicCD/" / given;
+#else
         given = fs::current_path() / given; // thanks for the weird syntax!
+#endif
     for (auto &p : fs::directory_iterator{ given.parent_path() }) {
         char pbuf[0x100];
         char gbuf[0x100];
@@ -403,12 +407,15 @@ void RefreshEngine()
 {
     // Reload entire engine
     Engine.LoadGameConfig("Data/Game/GameConfig.bin");
+// yuo dnot' fcking ned dis on wee u catn evn se da titl
+#if RETRO_PLATFORM != RETRO_WII
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
     if (Engine.window) {
         char gameTitle[0x40];
         sprintf(gameTitle, "%s%s", Engine.gameWindowText, Engine.usingDataFile ? "" : " (Using Data Folder)");
         SDL_SetWindowTitle(Engine.window, gameTitle);
     }
+#endif
 #endif
 
     ReleaseGlobalSfx();

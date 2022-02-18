@@ -5,7 +5,11 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#if RETRO_PLATFORM == RETRO_WII
+#include "tinyxml2.h"
+#else
 #include <tinyxml2.h>
+#endif
 
 #define PLAYER_MAX (0x10)
 

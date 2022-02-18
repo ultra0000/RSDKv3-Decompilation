@@ -149,9 +149,22 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
             addPath              = true;
             std::string fStr     = std::string(filePathBuf);
             fStr.erase(fStr.begin(), fStr.begin() + 5); // remove "Data/"
+#if RETRO_PLATFORM == RETRO_WII
+            fStr.insert(0, "/SonicCD/");
+#endif
+            StrCopy(filePathBuf, fStr.c_str());
+        }
+    } 
+#if RETRO_PLATFORM == RETRO_WII
+    if (!Engine.usingDataFile) {
+        if (std::string(filePathBuf).rfind("Data/", 0) == 0) {
+            Engine.usingDataFile = false;
+            std::string fStr     = std::string(filePathBuf);
+            fStr.insert(0, "/SonicCD/");
             StrCopy(filePathBuf, fStr.c_str());
         }
     }
+#endif
 #endif
 
 #if RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_ANDROID

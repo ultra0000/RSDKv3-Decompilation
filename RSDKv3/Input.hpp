@@ -1,6 +1,10 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#if RETRO_PLATFORM == RETRO_WII
+#include <wiiuse/wpad.h>
+#endif
+
 enum InputButtons {
     INPUT_UP,
     INPUT_DOWN,
@@ -24,6 +28,21 @@ struct InputData {
     bool C;
     bool start;
 };
+
+#if RETRO_PLATFORM == RETRO_WII
+// based on https://github.com/SaturnSH2x2/Sonic-CD-11-3DS/blob/master/RSDKv3/Input.hpp
+const unsigned int _WiiKeys[8] = {
+	WPAD_BUTTON_RIGHT,
+	WPAD_BUTTON_LEFT,
+	WPAD_BUTTON_UP,
+	WPAD_BUTTON_DOWN,
+	WPAD_BUTTON_1,
+	WPAD_BUTTON_2,
+	WPAD_BUTTON_A,
+	WPAD_BUTTON_PLUS
+};
+const int keyCount = 8;
+#endif
 
 struct InputButton {
     bool press, hold;

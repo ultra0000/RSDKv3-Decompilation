@@ -295,6 +295,45 @@ void InitUserdata()
     FileIO *file = fOpen(buffer, "rb");
     IniParser ini;
     if (!file) {
+#if RETRO_PLATFORM == RETRO_WII
+
+        ini.SetBool("Dev", "DevMenu", Engine.devMenu = false);
+        ini.SetBool("Dev", "EngineDebugMode", engineDebugMode = false);
+        ini.SetBool("Dev", "TxtScripts", forceUseScripts = false);
+        forceUseScripts_Config = forceUseScripts;
+        ini.SetInteger("Dev", "StartingCategory", Engine.startList = 0);
+        ini.SetInteger("Dev", "StartingScene", Engine.startStage = 0);
+        ini.SetInteger("Dev", "FastForwardSpeed", Engine.fastForwardSpeed = 8);
+        ini.SetBool("Dev", "UseSteamDir", Engine.useSteamDir = false);
+        ini.SetBool("Dev", "UseHQModes", Engine.useHQModes = false);
+        sprintf(Engine.dataFile, "%s", "Data.rsdk");
+        ini.SetString("Dev", "DataFile", Engine.dataFile);
+
+        Engine.startList_Game  = Engine.startList;
+        Engine.startStage_Game = Engine.startStage;
+
+        ini.SetInteger("Game", "Language", Engine.language = RETRO_EN);
+        ini.SetInteger("Game", "OriginalControls", controlMode = -1);
+        ini.SetBool("Game", "DisableTouchControls", disableTouchControls = false);
+        ini.SetBool("Game", "DisableFocusPause", disableFocusPause = false);
+        disableFocusPause_Config = disableFocusPause;
+
+        ini.SetBool("Window", "FullScreen", Engine.startFullScreen = false);
+        ini.SetBool("Window", "Borderless", Engine.borderless = false);
+        ini.SetBool("Window", "VSync", Engine.vsync = true);
+        ini.SetInteger("Window", "ScalingMode", Engine.scalingMode = 0);
+        ini.SetInteger("Window", "WindowScale", Engine.windowScale = 1);
+        ini.SetInteger("Window", "ScreenWidth", SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE);
+        SCREEN_XSIZE_CONFIG = SCREEN_XSIZE;
+        ini.SetInteger("Window", "RefreshRate", Engine.refreshRate = 60);
+        ini.SetInteger("Window", "DimLimit", Engine.dimLimit = 300);
+        Engine.dimLimit *= Engine.refreshRate;
+        renderType = RENDER_SW;
+        ini.SetBool("Window", "HardwareRenderer", false);
+
+        ini.SetFloat("Audio", "BGMVolume", bgmVolume / (float)MAX_VOLUME);
+        ini.SetFloat("Audio", "SFXVolume", sfxVolume / (float)MAX_VOLUME);
+#else
         ini.SetBool("Dev", "DevMenu", Engine.devMenu = false);
         ini.SetBool("Dev", "EngineDebugMode", engineDebugMode = false);
         ini.SetBool("Dev", "TxtScripts", forceUseScripts = false);
@@ -385,7 +424,7 @@ void InitUserdata()
         ini.SetFloat("Controller 1", "LTriggerDeadzone", LTRIGGER_DEADZONE = 0.3);
         ini.SetFloat("Controller 1", "RTriggerDeadzone", RTRIGGER_DEADZONE = 0.3);
 #endif
-
+#endif
         ini.Write(buffer, false);
     }
     else {
@@ -445,8 +484,12 @@ void InitUserdata()
             Engine.scalingMode = 0;
         if (!ini.GetInteger("Window", "WindowScale", &Engine.windowScale))
             Engine.windowScale = 2;
+#if RETRO_PLATFORM == RETRO_WII
+        SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE;
+#else
         if (!ini.GetInteger("Window", "ScreenWidth", &SCREEN_XSIZE))
             SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE;
+#endif
         SCREEN_XSIZE_CONFIG = SCREEN_XSIZE;
         if (!ini.GetInteger("Window", "RefreshRate", &Engine.refreshRate))
             Engine.refreshRate = 60;

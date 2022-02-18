@@ -71,10 +71,17 @@ struct SceneInfo {
 };
 
 struct CollisionMasks {
+#if RETRO_PLATFORM == RETRO_WII
+    signed char floorMasks[TILE_COUNT * TILE_SIZE];
+    signed char lWallMasks[TILE_COUNT * TILE_SIZE];
+    signed char rWallMasks[TILE_COUNT * TILE_SIZE];
+    signed char roofMasks[TILE_COUNT * TILE_SIZE];
+#else
     sbyte floorMasks[TILE_COUNT * TILE_SIZE];
     sbyte lWallMasks[TILE_COUNT * TILE_SIZE];
     sbyte rWallMasks[TILE_COUNT * TILE_SIZE];
     sbyte roofMasks[TILE_COUNT * TILE_SIZE];
+#endif
     int angles[TILE_COUNT];
     byte flags[TILE_COUNT];
 };

@@ -38,10 +38,17 @@ struct SpriteFrame {
 };
 
 struct Hitbox {
+#if RETRO_PLATFORM == RETRO_WII
+    signed char left[HITBOX_DIR_COUNT];
+    signed char top[HITBOX_DIR_COUNT];
+    signed char right[HITBOX_DIR_COUNT];
+    signed char bottom[HITBOX_DIR_COUNT];
+#else
     sbyte left[HITBOX_DIR_COUNT];
     sbyte top[HITBOX_DIR_COUNT];
     sbyte right[HITBOX_DIR_COUNT];
     sbyte bottom[HITBOX_DIR_COUNT];
+#endif
 };
 
 extern AnimationFile animationFileList[ANIFILE_COUNT];

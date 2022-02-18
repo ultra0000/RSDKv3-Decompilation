@@ -329,6 +329,8 @@ bool getControllerButton(byte buttonID)
 }
 #endif //! RETRO_USING_SDL2
 
+// why was there no RETRO_USING_SDL2 in here? it's sdl2 only stuff, and i had to add it manually. -ultra0
+#if RETRO_USING_SDL2
 void controllerInit(byte controllerID)
 {
     SDL_GameController *controller = SDL_GameControllerOpen(controllerID);
@@ -350,6 +352,7 @@ void controllerClose(byte controllerID)
         inputType = 0;
     }
 }
+#endif
 
 void ProcessInput()
 {
@@ -435,6 +438,43 @@ void ProcessInput()
 #endif //! RETRO_USING_MOUSE
 
 #elif RETRO_USING_SDL1
+#if RETRO_PLATFORM == RETRO_WII
+    // based on https://github.com/SaturnSH2x2/Sonic-CD-11-3DS/blob/master/RSDKv3/Input.cpp
+    WPAD_ScanPads();
+
+    u16 buttonsDown = WPAD_ButtonsDown(0);
+    u16 buttonsHeld = WPAD_ButtonsHeld(0);
+
+    if (buttonsDown & WPAD_BUTTON_HOME) {
+        u16 buttonsDown = WPAD_ButtonsDown(0);
+        exit(0);
+    }
+
+    if (buttonsDown)
+        inputDevice[8].press = true;
+    else
+        inputDevice[8].press = false;
+
+    if (buttonsHeld)
+        inputDevice[8].hold = true;
+    else
+        inputDevice[8].hold = false;
+
+    for (int i = 0; i < keyCount; i++) {
+
+       if (buttonsDown & _WiiKeys[i]) {
+           inputDevice[i].press = true;
+       }
+       else
+           inputDevice[i].press = false;
+
+       if (buttonsHeld  & _WiiKeys[i]) {
+           inputDevice[i].hold = true;
+       }
+       else
+           inputDevice[i].hold = false;
+    }
+#else
     if (SDL_NumJoysticks() > 0) {
         controller = SDL_JoystickOpen(0);
 
@@ -501,6 +541,7 @@ void ProcessInput()
     if (!flag && inputType == 1) {
         inputDevice[INPUT_ANY].setReleased();
     }
+#endif
 #endif //! RETRO_USING_SDL2
 }
 #endif //! !RETRO_USE_ORIGINAL_CODE

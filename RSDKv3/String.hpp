@@ -53,6 +53,10 @@ inline int StrLength(const char *string)
         ;
     return len;
 }
+#if RETRO_PLATFORM == RETRO_WII
+int FindStringToken(const char *string, const char *token, signed char stopID);
+#else
 int FindStringToken(const char *string, const char *token, sbyte stopID);
+#endif
 
 #endif // !STRING_H

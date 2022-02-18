@@ -1,6 +1,10 @@
 #include "RetroEngine.hpp"
 
+#if RETRO_PLATFORM == RETRO_WII
+int FindStringToken(const char *string, const char *token, signed char stopID)
+#else
 int FindStringToken(const char *string, const char *token, sbyte stopID)
+#endif
 {
     int tokenCharID  = 0;
     bool tokenMatch  = true;

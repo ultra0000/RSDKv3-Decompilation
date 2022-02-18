@@ -8,6 +8,10 @@
 #include <unistd.h>
 #endif
 
+#if RETRO_PLATFORM == RETRO_WII
+int DEFAULT_SCREEN_XSIZE = 320;
+#endif
+
 bool usingCWD        = false;
 bool engineDebugMode = false;
 byte renderType      = RENDER_SW;
@@ -286,16 +290,31 @@ void RetroEngine::Init()
 
 void RetroEngine::Run()
 {
+#if RETRO_USING_SDL2
     unsigned long long targetFreq = SDL_GetPerformanceFrequency() / Engine.refreshRate;
     unsigned long long curTicks   = 0;
+#else
+    uint frameStart, frameEnd = SDL_GetTicks();
+    float frameDelta = 0.0f;
+#endif
 
     while (running) {
 #if !RETRO_USE_ORIGINAL_CODE
+#if RETRO_USING_SDL2
         if (!vsync) {
             if (SDL_GetPerformanceCounter() < curTicks + targetFreq)
                 continue;
             curTicks = SDL_GetPerformanceCounter();
         }
+#else
+        frameStart = SDL_GetTicks();
+        frameDelta = frameStart - frameEnd;
+
+        if (frameDelta < 1000.0f / (float)refreshRate)
+            SDL_Delay(1000.0f / (float)refreshRate - frameDelta);
+
+        frameEnd = SDL_GetTicks();
+#endif
 #endif
         running = processEvents();
 

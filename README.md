@@ -30,6 +30,11 @@ Even if your platform isn't supported by the official releases, you **must** buy
 * Added the idle screen dimming feature from Sonic Mania Plus, as well as allowing the user to disable it or set how long it takes for the screen to dim.
 
 # How to build
+## Wii
+* Install the required libraries from devkitpro (wii-sdl, ppc-libogg and ppc-libvorbis)
+* Get tinyxml2 and place it in the dependencies/all folder
+* Go to the "RSDKv3.Wii" folder and run "make"
+
 ## Windows
 * Clone the repo, then follow the instructions in the [depencencies readme for Windows](./dependencies/windows/dependencies.txt) to setup dependencies, then build via the visual studio solution.
 * Alternatively, you can grab a prebuilt executable from the releases section.

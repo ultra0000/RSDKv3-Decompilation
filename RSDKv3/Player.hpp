@@ -20,7 +20,11 @@ struct Player {
     byte skidding;
     byte pushing;
     byte collisionPlane;
+#if RETRO_PLATFORM == RETRO_WII
+    signed char controlMode;
+#else
     sbyte controlMode;
+#endif
     byte controlLock;
     int topSpeed;
     int acceleration;

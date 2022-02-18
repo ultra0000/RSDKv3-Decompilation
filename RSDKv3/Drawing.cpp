@@ -601,6 +601,9 @@ void FlipScreen()
         // TODO: there's gotta be a way to have SDL1.2 fill the window with the surface... right?
         if (Engine.gameMode != ENGINE_VIDEOWAIT) {
             if (Engine.windowScale == 1) {
+#if RETRO_PLATFORM == RETRO_WII
+                memcpy(Engine.screenBuffer->pixels, Engine.frameBuffer, Engine.screenBuffer->pitch * SCREEN_YSIZE);
+#else
                 ushort *frameBufferPtr = Engine.frameBuffer;
                 for (int y = 0; y < SCREEN_YSIZE; ++y) {
                     for (int x = 0; x < SCREEN_XSIZE; ++x) {
@@ -609,6 +612,7 @@ void FlipScreen()
                     frameBufferPtr += GFX_LINESIZE;
                     px += Engine.screenBuffer->pitch / sizeof(ushort);
                 }
+#endif
                 // memcpy(Engine.screenBuffer->pixels, Engine.frameBuffer, Engine.screenBuffer->pitch * SCREEN_YSIZE);
             }
             else {
@@ -870,6 +874,7 @@ void RenderFromTexture()
 
 void RenderFromRetroBuffer()
 {
+    #if RETRO_PLATFORM != RETRO_WII
     if (drawStageGFXHQ) {
         glBindTexture(GL_TEXTURE_2D, retroBuffer2x);
 
@@ -914,6 +919,7 @@ void RenderFromRetroBuffer()
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2, GL_RGBA, GL_UNSIGNED_BYTE, Engine.texBuffer2x);
     }
+    #endif
 
 #if RETRO_USING_OPENGL
     glLoadIdentity();
@@ -1054,6 +1060,12 @@ void setFullScreen(bool fs)
         SDL_RestoreWindow(Engine.window);
         SDL_SetWindowFullscreen(Engine.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 #endif
+#if RETRO_PLATFORM == RETRO_WII
+        int w = 640;
+        int h = 480;
+
+        float scaleH        = (h / (float)SCREEN_YSIZE);
+#else
         SDL_DisplayMode mode;
         SDL_GetDesktopDisplayMode(0, &mode);
 
@@ -1065,6 +1077,7 @@ void setFullScreen(bool fs)
         }
 
         float scaleH        = (mode.h / (float)SCREEN_YSIZE);
+#endif
         Engine.useFBTexture = ((float)scaleH - (int)scaleH) != 0 || Engine.scalingMode;
 
         float width = w;
@@ -1614,7 +1627,11 @@ void UpdateTextureBufferWithSortedSprites()
 
     for (int i = 0; i < SURFACE_MAX; i++) {
         int gfxSize  = 0;
+#if RETRO_PLATFORM == RETRO_WII
+        signed char surfID = -1;
+#else
         sbyte surfID = -1;
+#endif
         for (int s = 0; s < SURFACE_MAX; s++) {
             GFXSurface *surface = &gfxSurface[s];
             if (StrLength(surface->fileName) && surface->texStartX == -1) {

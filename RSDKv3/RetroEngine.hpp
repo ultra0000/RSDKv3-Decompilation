@@ -1,6 +1,10 @@
 #ifndef RETROENGINE_H
 #define RETROENGINE_H
 
+#if RETRO_PLATFORM == RETRO_WII
+#include <wiiuse/wpad.h>
+#endif
+
 // Disables POSIX use c++ name blah blah stuff
 #pragma warning(disable : 4996)
 
@@ -21,7 +25,9 @@
 // STANDARD TYPES
 // ================
 typedef unsigned char byte;
+#if RETRO_PLATFORM != RETRO_WII
 typedef signed char sbyte;
+#endif
 typedef unsigned short ushort;
 typedef unsigned int uint;
 
@@ -36,6 +42,7 @@ typedef unsigned int uint;
 // Custom Platforms start here
 #define RETRO_VITA (7)
 #define RETRO_UWP  (8)
+#define RETRO_WII (9)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -70,6 +77,8 @@ typedef unsigned int uint;
 #define RETRO_PLATFORM (RETRO_ANDROID)
 #elif defined __vita__
 #define RETRO_PLATFORM (RETRO_VITA)
+#elif defined __WII__
+#define RETRO_PLATFORM (RETRO_WII)
 #else
 #define RETRO_PLATFORM (RETRO_WIN) // Default
 #endif
@@ -77,6 +86,10 @@ typedef unsigned int uint;
 #if RETRO_PLATFORM == RETRO_VITA
 #define BASE_PATH            "ux0:data/SonicCD/"
 #define DEFAULT_SCREEN_XSIZE 480
+#define DEFAULT_FULLSCREEN   true
+#elif RETRO_PLATFORM == RETRO_WII
+#define BASE_PATH            "/SonicCD/"
+extern int DEFAULT_SCREEN_XSIZE;
 #define DEFAULT_FULLSCREEN   true
 #elif RETRO_PLATFORM == RETRO_UWP
 #define BASE_PATH            ""
@@ -94,6 +107,13 @@ typedef unsigned int uint;
     || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
+#define RETRO_USING_SDL1_AUDIO (0)
+#define RETRO_USING_SDLMIXER   (0)
+#elif RETRO_PLATFORM == RETRO_WII
+#define RETRO_USING_SDL1 (1)
+#define RETRO_USING_SDL2 (0)
+#define RETRO_USING_SDL1_AUDIO (0)
+#define RETRO_USING_SDLMIXER   (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
@@ -107,7 +127,9 @@ typedef unsigned int uint;
 #define RETRO_GAMEPLATFORM (RETRO_STANDARD)
 #endif
 
+#if RETRO_PLATFORM != RETRO_WII
 #define RETRO_USING_OPENGL (1)
+#endif
 
 #if RETRO_USING_OPENGL
 #if RETRO_PLATFORM == RETRO_ANDROID
@@ -169,7 +191,7 @@ typedef unsigned int uint;
 #else
 
 // use *this* macro to determine what platform the game thinks its running on (since only the first 7 platforms are supported natively by scripts)
-#if RETRO_PLATFORM == RETRO_VITA
+#if RETRO_PLATFORM == RETRO_VITA || RETRO_PLATFORM == RETRO_WII
 #define RETRO_GAMEPLATFORMID (RETRO_WIN)
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORMID (UAP_GetRetroGamePlatformId())
@@ -228,10 +250,17 @@ enum RetroEngineCallbacks {
 #endif
 };
 
+#if RETRO_PLATFORM == RETRO_WII
+enum RetroRenderTypes {
+    RENDER_SW = 1,
+    RENDER_HW = 0,
+};
+#else
 enum RetroRenderTypes {
     RENDER_SW = 0,
     RENDER_HW = 1,
 };
+#endif
 
 enum RetroBytecodeFormat {
     BYTECODE_MOBILE = 0,
@@ -242,15 +271,17 @@ enum RetroBytecodeFormat {
 #define SCREEN_YSIZE   (240)
 #define SCREEN_CENTERY (SCREEN_YSIZE / 2)
 
-#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID
+#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_WII
 #if RETRO_USING_SDL2
 #include <SDL.h>
 #elif RETRO_USING_SDL1
 #include <SDL.h>
 #endif
 #include <vorbis/vorbisfile.h>
+#if RETRO_PLATFORM != RETRO_WII
 #include <theora/theora.h>
 #include <theoraplay.h>
+#endif
 #elif RETRO_PLATFORM == RETRO_OSX
 #include <SDL2/SDL.h>
 #include <Vorbis/vorbisfile.h>
@@ -270,6 +301,10 @@ enum RetroBytecodeFormat {
 #include <vorbis/vorbisfile.h>
 #include <theora/theora.h>
 #include <theoraplay.h>
+#endif
+
+#if RETRO_USING_SDLMIXER
+#include <SDL/SDL_mixer.h>
 #endif
 
 #if RETRO_PLATFORM == RETRO_ANDROID
