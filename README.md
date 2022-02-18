@@ -1,3 +1,7 @@
+# **About this port**
+This is a port of v1.3.0 to the 3DS, using code from https://github.com/SaturnSH2x2/Sonic-CD-11-3DS
+Note: the hardware renderer hasn't been added yet so don't use it.
+
 ![](header.png?raw=true)
 # **SUPPORT THE OFFICIAL RELEASE OF SONIC CD**
 + Without assets from the official release, this decompilation will not run.
