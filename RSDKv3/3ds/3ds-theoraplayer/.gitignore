@@ -1,0 +1,12 @@
+romfs/gfx
+libsbuild
+tmplibs
+build
+out
+debug.txt
+*.3dsx
+*.cia
+*.smdh
+*.elf
+*.t3x
+*.bak

@@ -331,15 +331,18 @@ bool getControllerButton(byte buttonID)
 
 void controllerInit(byte controllerID)
 {
+#if RETRO_PLATFORM != RETRO_3DS
     SDL_GameController *controller = SDL_GameControllerOpen(controllerID);
     if (controller) {
         controllers.push_back(controller);
         inputType = 1;
     }
+#endif
 }
 
 void controllerClose(byte controllerID)
 {
+#if RETRO_PLATFORM != RETRO_3DS
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(controllerID);
     if (controller) {
         SDL_GameControllerClose(controller);
@@ -349,6 +352,7 @@ void controllerClose(byte controllerID)
     if (controllers.empty()) {
         inputType = 0;
     }
+#endif
 }
 
 void ProcessInput()
@@ -433,7 +437,49 @@ void ProcessInput()
         lastMouseY = my;
     }
 #endif //! RETRO_USING_MOUSE
+#elif RETRO_PLATFORM == RETRO_3DS
+    hidScanInput();
+    u32 kDown  = hidKeysDown();
+    u32 kHold  = hidKeysHeld();
 
+    // as of right now, key bindings for the 3DS version are hard-coded
+    // this might change later, probably not tho
+    if (kDown)
+        inputDevice[8].press = true;
+    else
+        inputDevice[8].press = false;
+
+    if (kHold)
+        inputDevice[8].hold = true;
+    else
+        inputDevice[8].hold = false;
+
+    for (int i = 0; i < keyCount; i++) {
+
+       if (kDown & _3DSKeys[i]) {
+           inputDevice[i].press = true;
+       }
+       else
+           inputDevice[i].press = false;
+
+       if (kHold  & _3DSKeys[i]) {
+           inputDevice[i].hold = true;
+       }
+       else
+           inputDevice[i].hold = false;
+    }
+
+    // debugging features I should've enabled earlier
+    // I seriously need a better way of doing this but whatever
+    if (kDown & KEY_R) {
+        if (Engine.devMenu)
+            Engine.showPaletteOverlay = !Engine.showPaletteOverlay;
+    }
+
+    if (kDown & KEY_SELECT) {
+        if (Engine.devMenu)
+            Engine.gameMode = ENGINE_INITDEVMENU;
+    }
 #elif RETRO_USING_SDL1
     if (SDL_NumJoysticks() > 0) {
         controller = SDL_JoystickOpen(0);

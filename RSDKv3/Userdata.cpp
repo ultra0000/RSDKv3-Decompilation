@@ -456,10 +456,10 @@ void InitUserdata()
             Engine.dimLimit *= Engine.refreshRate;
         bool hwRender = false;
         ini.GetBool("Window", "HardwareRenderer", &hwRender);
-        if (hwRender)
+        /*if (hwRender)
             renderType = RENDER_HW;
         else
-            renderType = RENDER_SW;
+            renderType = RENDER_SW;*/
         Engine.gameRenderType = Engine.gameRenderTypes[renderType];
 
         float bv = 0, sv = 0;
@@ -689,6 +689,10 @@ void InitUserdata()
     StrCopy(achievements[9].name, "Dr Eggman Got Served");
     StrCopy(achievements[10].name, "Just In Time");
     StrCopy(achievements[11].name, "Saviour of the Planet");
+
+#if RETRO_PLATFORM == RETRO_3DS
+    Engine.useHQModes = false; //fixes broken special stage floors
+#endif
 }
 
 void writeSettings()

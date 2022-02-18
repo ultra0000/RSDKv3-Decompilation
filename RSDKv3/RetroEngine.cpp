@@ -286,16 +286,53 @@ void RetroEngine::Init()
 
 void RetroEngine::Run()
 {
+#if RETRO_USING_SDL2
     unsigned long long targetFreq = SDL_GetPerformanceFrequency() / Engine.refreshRate;
+#elif RETRO_PLATFORM == RETRO_3DS
+    uint frameStart = osGetTime(); //svcGetSystemTick();
+    uint frameEnd = frameStart;
+#endif
     unsigned long long curTicks   = 0;
+    float frameDelta = 0.0f;
+	float msPerFrame = 1000.f / 59.94f;
+	unsigned int frameTime = 0;
+	bool fullspeed = false;
 
+#if RETRO_USING_SDL2
     while (running) {
+#elif RETRO_PLATFORM == RETRO_3DS
+    while (running && aptMainLoop()) {
+	frameStart = osGetTime(); //svcGetSystemTick();
+#endif
+		frameTime = frameStart - frameEnd;
+		frameEnd = frameStart;
+		
+		if (frameTime <= ceil(msPerFrame*2)+1) {
+			fullspeed = true;
+		} else {
+			frameDelta += frameTime;
+			
+			if (frameDelta > msPerFrame * 4)
+				frameDelta = msPerFrame * 4;
+		}
+
+#if RETRO_PLATFORM != RETRO_3DS
+        if (frameDelta < 1000.0f / (float)refreshRate)
+            SDL_Delay(1000.0f / (float)refreshRate - frameDelta);
+#endif
+
+#if (RETRO_USING_SDL1 || RETRO_USING_SDL2) && RETRO_PLATFORM != RETRO_3DS
+        frameEnd = SDL_GetTicks();
+#endif
+
+#if RETRO_PLATFORM != RETRO_3DS
 #if !RETRO_USE_ORIGINAL_CODE
         if (!vsync) {
             if (SDL_GetPerformanceCounter() < curTicks + targetFreq)
                 continue;
             curTicks = SDL_GetPerformanceCounter();
         }
+#endif
 #endif
         running = processEvents();
 

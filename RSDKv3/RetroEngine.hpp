@@ -36,6 +36,7 @@ typedef unsigned int uint;
 // Custom Platforms start here
 #define RETRO_VITA (7)
 #define RETRO_UWP  (8)
+#define RETRO_3DS  (9)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -70,6 +71,8 @@ typedef unsigned int uint;
 #define RETRO_PLATFORM (RETRO_ANDROID)
 #elif defined __vita__
 #define RETRO_PLATFORM (RETRO_VITA)
+#elif defined _3DS
+#define RETRO_PLATFORM (RETRO_3DS)
 #else
 #define RETRO_PLATFORM (RETRO_WIN) // Default
 #endif
@@ -82,6 +85,11 @@ typedef unsigned int uint;
 #define BASE_PATH            ""
 #define DEFAULT_SCREEN_XSIZE 424
 #define DEFAULT_FULLSCREEN   false
+#elif RETRO_PLATFORM == RETRO_3DS
+#define BASE_PATH            "/3ds/SonicCD/"
+#define DEFAULT_SCREEN_XSIZE 400
+#define DEFAULT_FULLSCREEN   true
+#define RETRO_DEFAULTSCALINGMODE 2  // gets the compiler to shut up
 #else
 #define BASE_PATH ""
 #define RETRO_USING_MOUSE
@@ -92,8 +100,16 @@ typedef unsigned int uint;
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_VITA                        \
     || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID
-#define RETRO_USING_SDL1 (0)
-#define RETRO_USING_SDL2 (1)
+#define RETRO_USING_SDL2       (1)
+#define RETRO_USING_SDL1       (0)
+#define RETRO_USING_C2D        (0)
+#define RETRO_USING_SDL1_AUDIO (0)
+#elif RETRO_PLATFORM == RETRO_3DS
+#define RETRO_USING_SDL2       (0)
+#define RETRO_USING_SDL1       (0)
+#define RETRO_USING_C2D        (0) // note: hardware renderer hasn't been implemented yet, do not use this.
+#define RETRO_USING_SDL1_AUDIO (0)
+#define RETRO_USING_SDLMIXER   (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
@@ -103,11 +119,17 @@ typedef unsigned int uint;
 #define RETRO_GAMEPLATFORM (RETRO_MOBILE)
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORM (UAP_GetRetroGamePlatform())
+#elif RETRO_PLATFORM == RETRO_3DS
+#define RETRO_GAMEPLATFORM (RETRO_WIN)
 #else
 #define RETRO_GAMEPLATFORM (RETRO_STANDARD)
 #endif
 
+#if RETRO_PLATFORM == RETRO_3DS
+#define RETRO_USING_OPENGL (0)
+#else
 #define RETRO_USING_OPENGL (1)
+#endif
 
 #if RETRO_USING_OPENGL
 #if RETRO_PLATFORM == RETRO_ANDROID
@@ -158,7 +180,9 @@ typedef unsigned int uint;
 #define GL_COLOR_ATTACHMENT0   GL_COLOR_ATTACHMENT0_EXT
 #define GL_FRAMEBUFFER_BINDING GL_FRAMEBUFFER_BINDING_EXT
 #else
+#if RETRO_PLATFORM != RETRO_3DS
 #include <GL/glew.h>
+#endif
 #endif
 #endif
 
@@ -171,12 +195,26 @@ typedef unsigned int uint;
 // use *this* macro to determine what platform the game thinks its running on (since only the first 7 platforms are supported natively by scripts)
 #if RETRO_PLATFORM == RETRO_VITA
 #define RETRO_GAMEPLATFORMID (RETRO_WIN)
+#elif RETRO_PLATFORM == RETRO_3DS
+#define RETRO_GAMEPLATFORMID (RETRO_WIN)
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORMID (UAP_GetRetroGamePlatformId())
 #else
 #error Unspecified RETRO_GAMEPLATFORMID
 #endif
 
+#endif
+
+// compiler errors get thrown if this isn't defined
+#if RETRO_PLATFORM == RETRO_3DS
+#define Sint8  s8
+#define Sint16 s16
+#define Sint32 s32
+#define Sint64 s64
+#define Uint8  u8
+#define Uint16 u16
+#define Uint32 u32
+#define Uint64 u64
 #endif
 
 enum RetroLanguages { RETRO_EN = 0, RETRO_FR = 1, RETRO_IT = 2, RETRO_DE = 3, RETRO_ES = 4, RETRO_JP = 5 };
@@ -228,11 +266,17 @@ enum RetroEngineCallbacks {
 #endif
 };
 
+#if RETRO_USING_C2D
 enum RetroRenderTypes {
     RENDER_SW = 0,
     RENDER_HW = 1,
 };
-
+#else
+enum RetroRenderTypes {
+    RENDER_SW = 1,
+    RENDER_HW = 0,
+};
+#endif
 enum RetroBytecodeFormat {
     BYTECODE_MOBILE = 0,
     BYTECODE_PC     = 1,
@@ -270,6 +314,25 @@ enum RetroBytecodeFormat {
 #include <vorbis/vorbisfile.h>
 #include <theora/theora.h>
 #include <theoraplay.h>
+#elif RETRO_PLATFORM == RETRO_3DS
+#include <citro2d.h>
+#include <tex3ds.h>
+#include <tremor/ivorbisfile.h>
+#include <tremor/ivorbiscodec.h>
+#include <theora/theora.h>
+#include <theoraplay.h>
+#include <math.h>
+#include <unistd.h>
+#include "3ds/3ds-theoraplayer/source/video.h"
+#include "3ds/3ds-theoraplayer/source/frame.h"
+#if RETRO_USING_SDL1_AUDIO
+#include <SDL/SDL.h>
+#endif
+#endif
+
+#if RETRO_USING_SDLMIXER
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 #endif
 
 #if RETRO_PLATFORM == RETRO_ANDROID
@@ -302,6 +365,13 @@ extern byte renderType;
 #include "Userdata.hpp"
 #include "Debug.hpp"
 #include "ModAPI.hpp"
+
+#if RETRO_PLATFORM == RETRO_3DS
+#include "3ds/debug_3ds.hpp"
+#include "3ds/audio_3ds.hpp"
+#include "3ds/render_3ds.hpp"
+#include "3ds/video_3ds.hpp"
+#endif
 
 class RetroEngine
 {
@@ -436,12 +506,21 @@ public:
     SDL_Texture *videoBuffer    = nullptr;
 #endif
 
-    SDL_Event sdlEvents;
-
 #if RETRO_USING_OPENGL
     SDL_GLContext glContext; // OpenGL context
 #endif
 
+#endif
+
+#if RETRO_USING_SDL1 || RETRO_USING_SDL2
+    SDL_Event sdlEvents;
+#endif
+
+#if RETRO_PLATFORM == RETRO_3DS
+    // due to the 3DS's limited resolution, image scaling isn't needed here
+    C3D_RenderTarget* topScreen;
+    C3D_RenderTarget* rightScreen;
+    C3D_FrameBuf* videoBuffer;
 #endif
 
 #if RETRO_USING_SDL1

@@ -49,6 +49,11 @@ void parseArguments(int argc, char *argv[]) {
 
 int main(int argc, char *argv[])
 {
+#if RETRO_PLATFORM == RETRO_3DS
+    if (Engine.gameRenderType[RENDER_SW]) {
+        osSetSpeedupEnable(true);
+    }
+#endif
 #if !RETRO_USE_ORIGINAL_CODE
     parseArguments(argc, argv);
 #endif

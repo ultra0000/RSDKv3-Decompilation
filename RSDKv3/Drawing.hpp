@@ -11,7 +11,11 @@
 
 #define DRAWLAYER_COUNT (7)
 
+#if RETRO_PLATFORM == RETRO_3DS
+enum FlipFlags { FLIP_NO, FLIP_X, FLIP_Y, FLIP_XY };
+#else
 enum FlipFlags { FLIP_NONE, FLIP_X, FLIP_Y, FLIP_XY };
+#endif
 enum InkFlags { INK_NONE, INK_BLEND, INK_ALPHA, INK_ADD, INK_SUB };
 enum DrawFXFlags { FX_SCALE, FX_ROTATE, FX_ROTOZOOM, FX_INK, FX_TINT, FX_FLIP };
 

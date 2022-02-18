@@ -19,9 +19,15 @@ short blendLookupTable[BLENDTABLE_SIZE];
 short subtractLookupTable[BLENDTABLE_SIZE];
 short tintLookupTable[TINTTABLE_SIZE];
 
+#if RETRO_PLATFORM == RETRO_3DS
+int SCREEN_XSIZE = 400;
+int SCREEN_CENTERX = 200;
+int SCREEN_XSIZE_CONFIG = 400;
+#else
 int SCREEN_XSIZE        = 424;
 int SCREEN_CENTERX      = 424 / 2;
 int SCREEN_XSIZE_CONFIG = 424;
+#endif
 
 int touchWidth  = SCREEN_XSIZE;
 int touchHeight = SCREEN_YSIZE;
@@ -90,6 +96,23 @@ bool integerScaling = false;
 bool disableEnhancedScaling = false;
 // enable bilinear scaling, which just disables the fancy upscaling that enhanced scaling does.
 bool bilinearScaling = false;
+#endif
+
+#if RETRO_PLATFORM == RETRO_3DS
+// implementation taken from here: https://gbatemp.net/threads/best-way-to-draw-pixel-buffer.445173/
+static inline void CopyToFramebuffer(u16* buffer) {
+    u16* fb = (u16*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, 0, 0);
+    u16* pixels = buffer;
+
+    // kinda assume that SCREEN_XSIZE = 400 and SCREEN_YSIZE = 240 here
+    // framebuffer data is rotated 90 degrees internally
+    const int screenSize = SCREEN_XSIZE * SCREEN_YSIZE;
+    for (int y = 0; y < SCREEN_YSIZE; y++) {
+        for (int x = 0; x < SCREEN_XSIZE; x++) {
+            fb[((x * 240) + (240 - y - 1))] = *pixels++;
+	}
+    }
+}
 #endif
 
 int InitRenderDevice()
@@ -200,6 +223,12 @@ int InitRenderDevice()
         printf("error: %s", SDL_GetError());
     }
 
+#endif
+
+#if RETRO_PLATFORM == RETRO_3DS && !RETRO_USING_C2D
+    gfxInitDefault();
+    DebugConsoleInit(); 
+    gfxSetScreenFormat(GFX_TOP, GSP_RGB565_OES);
 #endif
 
 #if RETRO_USING_SDL1
@@ -496,17 +525,36 @@ void FlipScreen()
             }
             destScreenPos = &destScreenPosRect;
         }
-
+#endif
         int pitch = 0;
+#if RETRO_USING_SDL2
         SDL_SetRenderTarget(Engine.renderer, texTarget);
 
         // Clear the screen. This is needed to keep the
         // pillarboxes in fullscreen from displaying garbage data.
         SDL_RenderClear(Engine.renderer);
 
+#elif RETRO_PLATFORM == RETRO_3DS && !RETRO_USING_C2D
+   if (videoPlaying) {
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+	    C2D_TargetClear(topScreen, C2D_Color32(0, 0, 0, 255));
+	    C2D_SceneBegin(topScreen);
+	    if (isplaying && THEORA_HasVideo(&vidCtx))
+	        frameDrawAtCentered(&frame, SCREEN_XSIZE/2, SCREEN_YSIZE/2, 0.5f, 
+						scaleframe, scaleframe);
+        C3D_FrameEnd(0);
+    } else {
+        CopyToFramebuffer((u16*) Engine.frameBuffer);
+        gfxFlushBuffers();
+        gfxSwapBuffers();
+        gspWaitForVBlank();
+    }
+#endif
+
         ushort *pixels = NULL;
         if (Engine.gameMode != ENGINE_VIDEOWAIT) {
             if (!drawStageGFXHQ) {
+#if RETRO_USING_SDL2
                 SDL_LockTexture(Engine.screenBuffer, NULL, (void **)&pixels, &pitch);
                 ushort *frameBufferPtr = Engine.frameBuffer;
                 for (int y = 0; y < SCREEN_YSIZE; ++y) {
@@ -520,11 +568,16 @@ void FlipScreen()
                 SDL_UnlockTexture(Engine.screenBuffer);
 
                 SDL_RenderCopy(Engine.renderer, Engine.screenBuffer, NULL, destScreenPos);
+#elif RETRO_PLATFORM == RETRO_3DS && !RETRO_USING_C2D
+	            memcpy(pixels, Engine.frameBuffer, pitch * SCREEN_YSIZE);
+#endif
             }
             else {
                 int w = 0, h = 0;
+#if RETRO_USING_SDL2
                 SDL_QueryTexture(Engine.screenBuffer2x, NULL, NULL, &w, &h);
                 SDL_LockTexture(Engine.screenBuffer2x, NULL, (void **)&pixels, &pitch);
+#endif
 
                 ushort *framebufferPtr = Engine.frameBuffer;
                 for (int y = 0; y < (SCREEN_YSIZE / 2) + 12; ++y) {
@@ -558,14 +611,19 @@ void FlipScreen()
                         pixels++;
                     }
                 }
+#if RETRO_USING_SDL2
                 SDL_UnlockTexture(Engine.screenBuffer2x);
                 SDL_RenderCopy(Engine.renderer, Engine.screenBuffer2x, NULL, destScreenPos);
+#endif
             }
         }
         else {
+#if RETRO_USING_SDL2
             SDL_RenderCopy(Engine.renderer, Engine.videoBuffer, NULL, destScreenPos);
+#endif
         }
 
+#if RETRO_USING_SDL2
         if ((Engine.scalingMode != 0 && !disableEnhancedScaling) && Engine.gameMode != ENGINE_VIDEOWAIT) {
             // set render target back to the screen.
             SDL_SetRenderTarget(Engine.renderer, NULL);
@@ -871,7 +929,9 @@ void RenderFromTexture()
 void RenderFromRetroBuffer()
 {
     if (drawStageGFXHQ) {
+#if RETRO_USING_OPENGL
         glBindTexture(GL_TEXTURE_2D, retroBuffer2x);
+#endif
 
         uint *texBufferPtr     = Engine.texBuffer2x;
         ushort *framebufferPtr = Engine.frameBuffer;
@@ -911,8 +971,9 @@ void RenderFromRetroBuffer()
                 texBufferPtr++;
             }
         }
-
+#if RETRO_USING_OPENGL
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2, GL_RGBA, GL_UNSIGNED_BYTE, Engine.texBuffer2x);
+#endif
     }
 
 #if RETRO_USING_OPENGL
@@ -1017,6 +1078,8 @@ void ReleaseRenderDevice()
 #if RETRO_USING_SDL2 && !RETRO_USING_OPENGL
         SDL_DestroyTexture(Engine.screenBuffer);
         Engine.screenBuffer = NULL;
+#elif RETRO_PLATFORM == RETRO_3DS && !RETRO_USING_C2D
+        gfxExit();
 #endif
 
 #if RETRO_USING_SDL1 && !RETRO_USING_OPENGL
@@ -1053,7 +1116,6 @@ void setFullScreen(bool fs)
 #if RETRO_USING_SDL2
         SDL_RestoreWindow(Engine.window);
         SDL_SetWindowFullscreen(Engine.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-#endif
         SDL_DisplayMode mode;
         SDL_GetDesktopDisplayMode(0, &mode);
 
@@ -1065,6 +1127,12 @@ void setFullScreen(bool fs)
         }
 
         float scaleH        = (mode.h / (float)SCREEN_YSIZE);
+#elif RETRO_PLATFORM == RETRO_3DS
+        int w = 800;
+        int h = 240;
+
+        float scaleH        = (h / (float)SCREEN_YSIZE);
+#endif
         Engine.useFBTexture = ((float)scaleH - (int)scaleH) != 0 || Engine.scalingMode;
 
         float width = w;

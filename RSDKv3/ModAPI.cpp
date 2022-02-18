@@ -40,7 +40,7 @@ namespace fs = std::filesystem;
 fs::path resolvePath(fs::path given)
 {
     if (given.is_relative())
-        given = fs::current_path() / given; // thanks for the weird syntax!
+        given = "/3ds/SonicCD/" / given; // thanks for the weird syntax!
     for (auto &p : fs::directory_iterator{ given.parent_path() }) {
         char pbuf[0x100];
         char gbuf[0x100];
