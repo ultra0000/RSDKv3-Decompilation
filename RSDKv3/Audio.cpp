@@ -342,6 +342,7 @@ void ProcessAudioPlayback(void *userdata, Uint8 *stream, int len)
 #if RETRO_USING_SDL2
         // Process music being played by a ogv video
         if (videoPlaying == 1) {
+    #if RETRO_PLATFORM != RETRO_WII
             // Fetch THEORAPLAY audio packets, and shove them into the SDL Audio Stream
             const size_t bytes_to_do = samples_to_do * sizeof(Sint16);
 
@@ -366,6 +367,7 @@ void ProcessAudioPlayback(void *userdata, Uint8 *stream, int len)
             // Mix the converted audio data into the final output
             if (get != -1)
                 ProcessAudioMixing(mix_buffer, buffer, get / sizeof(Sint16), bgmVolume, 0);
+    #endif
         }
         else {
             SDL_AudioStreamClear(ogv_stream); // Prevent leftover audio from playing at the start of the next video

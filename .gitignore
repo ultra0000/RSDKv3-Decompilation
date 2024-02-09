@@ -295,3 +295,7 @@ android/local.properties
 .flatpak-builder
 flatpak/*.apk
 build-dir
+
+# Wii
+RSDKv3.Wii/RSDKv3.Wii.elf
+RSDKv3.Wii/RSDKv3.Wii.dol
