@@ -2,10 +2,10 @@
 
 int touchFlags = 0;
 
-void initDevMenu()
+void InitDevMenu()
 {
 #if RETRO_USE_MOD_LOADER
-    for (int m = 0; m < modList.size(); ++m) scanModFolder(&modList[m]);
+    for (int m = 0; m < modList.size(); ++m) ScanModFolder(&modList[m]);
 #endif
     drawStageGFXHQ = false;
     xScrollOffset  = 0;
@@ -36,7 +36,11 @@ void initDevMenu()
     StrAdd(version, " Version");
     AddTextMenuEntry(&gameMenu[0], version);
     AddTextMenuEntry(&gameMenu[0], Engine.gameVersion);
+#ifdef RETRO_DEV_EXTRA
+    AddTextMenuEntry(&gameMenu[0], RETRO_DEV_EXTRA);
+#else
     AddTextMenuEntry(&gameMenu[0], " ");
+#endif
     AddTextMenuEntry(&gameMenu[0], " ");
     AddTextMenuEntry(&gameMenu[0], " ");
     AddTextMenuEntry(&gameMenu[0], " ");
@@ -62,7 +66,7 @@ void initDevMenu()
         UpdateHardwareTextures();
     }
 }
-void initErrorMessage()
+void InitErrorMessage()
 {
     drawStageGFXHQ = false;
     xScrollOffset  = 0;
@@ -95,7 +99,7 @@ void initErrorMessage()
         UpdateHardwareTextures();
     }
 }
-void processStageSelect()
+void ProcessStageSelect()
 {
     ClearScreen(0xF0);
     keyDown.start = false;
@@ -202,7 +206,7 @@ void processStageSelect()
                     SetupTextMenu(&gameMenu[0], 0);
                     AddTextMenuEntry(&gameMenu[0], "MOD LIST");
                     SetupTextMenu(&gameMenu[1], 0);
-                    initMods();
+                    InitMods();
 
                     char buffer[0x100];
                     for (int m = 0; m < modList.size(); ++m) {
@@ -245,6 +249,7 @@ void processStageSelect()
             }
             break;
         }
+
         case DEVMENU_PLAYERSEL: // Selecting Player
         {
             if (keyPress.down)
@@ -286,7 +291,11 @@ void processStageSelect()
                 StrAdd(version, " Version");
                 AddTextMenuEntry(&gameMenu[0], version);
                 AddTextMenuEntry(&gameMenu[0], Engine.gameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&gameMenu[0], RETRO_DEV_EXTRA);
+#else
                 AddTextMenuEntry(&gameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
@@ -309,6 +318,7 @@ void processStageSelect()
             }
             break;
         }
+
         case DEVMENU_STAGELISTSEL: // Selecting Category
         {
             if (keyPress.down)
@@ -381,6 +391,7 @@ void processStageSelect()
             }
             break;
         }
+
         case DEVMENU_STAGESEL: // Selecting Stage
         {
             if (keyDown.down) {
@@ -451,6 +462,7 @@ void processStageSelect()
             }
             break;
         }
+
         case DEVMENU_SCRIPTERROR: // Script Error
         {
             DrawTextMenu(&gameMenu[0], SCREEN_CENTERX, 72);
@@ -464,7 +476,11 @@ void processStageSelect()
                 StrAdd(version, " Version");
                 AddTextMenuEntry(&gameMenu[0], version);
                 AddTextMenuEntry(&gameMenu[0], Engine.gameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&gameMenu[0], RETRO_DEV_EXTRA);
+#else
                 AddTextMenuEntry(&gameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
@@ -505,12 +521,13 @@ void processStageSelect()
             }
             break;
         }
+
 #if RETRO_USE_MOD_LOADER
         case DEVMENU_MODMENU: // Mod Menu
         {
             int preOption = gameMenu[1].selection1;
             if (keyDown.down) {
-                gameMenu[1].timer += 1;
+                gameMenu[1].timer++;
                 if (gameMenu[1].timer > 8) {
                     gameMenu[1].timer = 0;
                     keyPress.down     = true;
@@ -518,7 +535,7 @@ void processStageSelect()
             }
             else {
                 if (keyDown.up) {
-                    gameMenu[1].timer -= 1;
+                    gameMenu[1].timer--;
                     if (gameMenu[1].timer < -8) {
                         gameMenu[1].timer = 0;
                         keyPress.up       = true;
@@ -528,28 +545,32 @@ void processStageSelect()
                     gameMenu[1].timer = 0;
                 }
             }
+
             if (keyPress.down) {
                 gameMenu[1].selection1++;
                 if (gameMenu[1].selection1 - gameMenu[1].visibleRowOffset >= gameMenu[1].visibleRowCount) {
-                    gameMenu[1].visibleRowOffset += 1;
+                    gameMenu[1].visibleRowOffset++;
                 }
             }
+
             if (keyPress.up) {
                 gameMenu[1].selection1--;
-                if (gameMenu[1].selection1 - gameMenu[1].visibleRowOffset < 0) {
-                    gameMenu[1].visibleRowOffset -= 1;
+                if (gameMenu[1].selection1 - gameMenu[1].visibleRowOffset < 0 && gameMenu[1].visibleRowOffset > 0) {
+                    gameMenu[1].visibleRowOffset--;
                 }
             }
 
             if (gameMenu[1].selection1 >= gameMenu[1].rowCount) {
                 if (keyDown.C) {
                     gameMenu[1].selection1--;
+                    gameMenu[1].visibleRowOffset--;
                 }
                 else {
                     gameMenu[1].selection1       = 0;
                     gameMenu[1].visibleRowOffset = 0;
                 }
             }
+
             if (gameMenu[1].selection1 < 0) {
                 if (keyDown.C) {
                     gameMenu[1].selection1++;
@@ -569,7 +590,9 @@ void processStageSelect()
                 StrAdd(buffer, (modList[gameMenu[1].selection1].active ? "  Active" : "Inactive"));
                 EditTextMenuEntry(&gameMenu[1], buffer, gameMenu[1].selection1);
             }
+
             if (keyDown.C && gameMenu[1].selection1 != preOption) {
+                int visibleOffset  = gameMenu[1].visibleRowOffset;
                 int option         = gameMenu[1].selection1;
                 ModInfo swap       = modList[preOption];
                 modList[preOption] = modList[option];
@@ -598,7 +621,7 @@ void processStageSelect()
                 gameMenu[0].alignment        = 2;
                 gameMenu[0].selectionCount   = 1;
                 gameMenu[1].timer            = 0;
-                gameMenu[1].visibleRowOffset = 0;
+                gameMenu[1].visibleRowOffset = visibleOffset;
             }
             else if (keyPress.B) {
                 RefreshEngine();
@@ -612,7 +635,11 @@ void processStageSelect()
                 StrAdd(version, " Version");
                 AddTextMenuEntry(&gameMenu[0], version);
                 AddTextMenuEntry(&gameMenu[0], Engine.gameVersion);
+#ifdef RETRO_DEV_EXTRA
+                AddTextMenuEntry(&gameMenu[0], RETRO_DEV_EXTRA);
+#else
                 AddTextMenuEntry(&gameMenu[0], " ");
+#endif
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], " ");
@@ -621,10 +648,8 @@ void processStageSelect()
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], "STAGE SELECT");
                 AddTextMenuEntry(&gameMenu[0], " ");
-#if RETRO_USE_MOD_LOADER
                 AddTextMenuEntry(&gameMenu[0], "MODS");
                 AddTextMenuEntry(&gameMenu[0], " ");
-#endif
                 AddTextMenuEntry(&gameMenu[0], "EXIT GAME");
                 gameMenu[0].alignment        = 2;
                 gameMenu[0].selectionCount   = 2;
@@ -639,6 +664,7 @@ void processStageSelect()
             break;
         }
 #endif
+
         default: break;
     }
 

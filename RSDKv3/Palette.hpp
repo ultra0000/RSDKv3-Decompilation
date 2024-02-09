@@ -24,6 +24,11 @@ extern ushort *activePalette; // Ptr to the 256 colour set thats active
 extern PaletteEntry *activePalette32;
 
 extern byte gfxLineBuffer[SCREEN_YSIZE]; // Pointers to active palette
+extern int GFX_LINESIZE;
+extern int GFX_LINESIZE_MINUSONE;
+extern int GFX_LINESIZE_DOUBLE;
+extern int GFX_FRAMEBUFFERSIZE;
+extern int GFX_FBUFFERMINUSONE;
 
 extern int fadeMode;
 extern byte fadeA;
@@ -38,7 +43,7 @@ extern int texPaletteNum;
 extern uint gfxPalette16to32[0x10000];
 
 #define RGB888_TO_RGB5551(r, g, b) ((((b) >> 3) << 1) | (((g) >> 3) << 6) | (((r) >> 3) << 11) | 0) // used in mobile vers
-#define RGB888_TO_RGB565(r, g, b)  ((b) >> 3) | (((g) >> 2) << 5) | (((r) >> 3) << 11)              // used in pc vers
+#define RGB888_TO_RGB565(r, g, b)  ((b) >> 3) | (((g) >> 2) << 5) | (((r) >> 3) << 11) // used in pc vers
 
 #define PACK_RGB888(colour, r, g, b)                                                                                                                 \
     if (renderType == RENDER_SW)                                                                                                                     \

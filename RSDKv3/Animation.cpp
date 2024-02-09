@@ -23,7 +23,7 @@ void LoadAnimationFile(const char *filePath)
         sheetIDs[0] = 0;
 
         byte sheetCount = 0;
-        FileRead(&sheetCount, 1); // Sheet Count
+        FileRead(&sheetCount, 1);
 
         // Read & load each spritesheet
         for (int s = 0; s < sheetCount; ++s) {
@@ -55,7 +55,7 @@ void LoadAnimationFile(const char *filePath)
             FileRead(&anim->frameCount, 1);
             FileRead(&anim->speed, 1);
             FileRead(&anim->loopPoint, 1);
-            FileRead(&anim->rotationFlag, 1);
+            FileRead(&anim->rotationStyle, 1);
 
             for (int j = 0; j < anim->frameCount; ++j) {
                 SpriteFrame *frame = &animFrames[animFrameCount++];
@@ -80,8 +80,9 @@ void LoadAnimationFile(const char *filePath)
                 FileRead(&buffer, 1);
                 frame->pivotY = buffer;
             }
+
             // 90 Degree (Extra rotation Frames) rotation
-            if (anim->rotationFlag == ROTFLAG_STATICFRAMES)
+            if (anim->rotationStyle == ROTSTYLE_STATICFRAMES)
                 anim->frameCount >>= 1;
         }
 
@@ -150,13 +151,15 @@ void ProcessObjectAnimation(void *objScr, void *ent)
             entity->animationSpeed = 0xF0;
         entity->animationTimer += entity->animationSpeed;
     }
+
     if (entity->animation != entity->prevAnimation) {
         entity->prevAnimation  = entity->animation;
         entity->frame          = 0;
         entity->animationTimer = 0;
         entity->animationSpeed = 0;
     }
-    if (entity->animationTimer > 0xEF) {
+
+    if (entity->animationTimer >= 0xF0) {
         entity->animationTimer -= 0xF0;
         ++entity->frame;
     }

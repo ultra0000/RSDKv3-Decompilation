@@ -9,6 +9,11 @@ ushort fullPalette[PALETTE_COUNT][PALETTE_SIZE];
 ushort *activePalette = fullPalette[0]; // Ptr to the 256 colour set thats active
 
 byte gfxLineBuffer[SCREEN_YSIZE]; // Pointers to active palette
+int GFX_LINESIZE;
+int GFX_LINESIZE_MINUSONE;
+int GFX_LINESIZE_DOUBLE;
+int GFX_FRAMEBUFFERSIZE;
+int GFX_FBUFFERMINUSONE;
 
 int fadeMode = 0;
 byte fadeA   = 0;
@@ -60,9 +65,8 @@ void SetLimitedFade(byte paletteID, byte R, byte G, byte B, ushort alpha, int st
     activePalette   = fullPalette[paletteID];
     activePalette32 = fullPalette32[paletteID];
 
-    if (alpha >= PALETTE_SIZE) {
-        alpha = PALETTE_SIZE - 1;
-    }
+    if (alpha >= 0x100)
+        alpha = 0xFF;
 
     if (startIndex >= endIndex)
         return;
@@ -72,10 +76,11 @@ void SetLimitedFade(byte paletteID, byte R, byte G, byte B, ushort alpha, int st
         PACK_RGB888(activePalette[i], (byte)((ushort)(R * alpha + alpha2 * activePalette32[i].r) >> 8),
                     (byte)((ushort)(G * alpha + alpha2 * activePalette32[i].g) >> 8),
                     (byte)((ushort)(B * alpha + alpha2 * activePalette32[i].b) >> 8));
-        activePalette32[i].r = (byte)((ushort)(R * alpha + alpha2 * activePalette32[i].r) >> 8);
-        activePalette32[i].g = (byte)((ushort)(G * alpha + alpha2 * activePalette32[i].g) >> 8);
-        activePalette32[i].b = (byte)((ushort)(B * alpha + alpha2 * activePalette32[i].b) >> 8);
-        if (renderType == RENDER_HW)
+        if (renderType == RENDER_HW) { // not like this works on HW....
+            activePalette32[i].r = (byte)((ushort)(R * alpha + alpha2 * activePalette32[i].r) >> 8);
+            activePalette32[i].g = (byte)((ushort)(G * alpha + alpha2 * activePalette32[i].g) >> 8);
+            activePalette32[i].b = (byte)((ushort)(B * alpha + alpha2 * activePalette32[i].b) >> 8);
             activePalette[i] |= 1;
+        }
     }
 }

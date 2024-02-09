@@ -21,7 +21,7 @@ void SetObjectTypeName(const char *objectName, int objectID)
         ++objNameID;
     }
     typeNames[objectID][typeNameID] = 0;
-    printLog("Set Object (%d) name to: %s", objectID, objectName);
+    PrintLog("Set Object (%d) name to: %s", objectID, objectName);
 }
 
 void ProcessStartupObjects()
@@ -39,7 +39,7 @@ void ProcessStartupObjects()
         scriptInfo->frameListOffset = scriptFrameCount;
         scriptInfo->spriteSheetID   = 0;
         entity->type                = i;
-        if (scriptData[scriptInfo->subStartup.scriptCodePtr] > 0)
+        if (scriptCode[scriptInfo->subStartup.scriptCodePtr] > 0)
             ProcessScript(scriptInfo->subStartup.scriptCodePtr, scriptInfo->subStartup.jumpTablePtr, SUB_SETUP);
         scriptInfo->frameCount = scriptFrameCount - scriptInfo->frameListOffset;
     }
@@ -56,19 +56,22 @@ void ProcessObjects()
         int x = 0, y = 0;
         Entity *entity = &objectEntityList[objectLoop];
         switch (entity->priority) {
-            case PRIORITY_ACTIVE_BOUNDS:
+            case PRIORITY_BOUNDS:
                 x      = entity->XPos >> 16;
                 y      = entity->YPos >> 16;
                 active = x > xScrollOffset - OBJECT_BORDER_X1 && x < OBJECT_BORDER_X2 + xScrollOffset && y > yScrollOffset - OBJECT_BORDER_Y1
                          && y < yScrollOffset + OBJECT_BORDER_Y2;
                 break;
-            case PRIORITY_ACTIVE: active = true; break;
-            case PRIORITY_ACTIVE_PAUSED: active = true; break;
-            case PRIORITY_ACTIVE_XBOUNDS:
+
+            case PRIORITY_ACTIVE:
+            case PRIORITY_ALWAYS: active = true; break;
+
+            case PRIORITY_XBOUNDS:
                 x      = entity->XPos >> 16;
                 active = x > xScrollOffset - OBJECT_BORDER_X1 && x < OBJECT_BORDER_X2 + xScrollOffset;
                 break;
-            case PRIORITY_ACTIVE_BOUNDS_REMOVE:
+
+            case PRIORITY_BOUNDS_DESTROY:
                 x = entity->XPos >> 16;
                 y = entity->YPos >> 16;
                 if (x <= xScrollOffset - OBJECT_BORDER_X1 || x >= OBJECT_BORDER_X2 + xScrollOffset || y <= yScrollOffset - OBJECT_BORDER_Y1
@@ -80,15 +83,18 @@ void ProcessObjects()
                     active = true;
                 }
                 break;
+
             case PRIORITY_INACTIVE: active = false; break;
+
             default: break;
         }
+
         if (active && entity->type > OBJ_TYPE_BLANKOBJECT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             activePlayer             = 0;
-            if (scriptData[scriptInfo->subMain.scriptCodePtr] > 0)
+            if (scriptCode[scriptInfo->subMain.scriptCodePtr] > 0)
                 ProcessScript(scriptInfo->subMain.scriptCodePtr, scriptInfo->subMain.jumpTablePtr, SUB_MAIN);
-            if (scriptData[scriptInfo->subPlayerInteraction.scriptCodePtr] > 0) {
+            if (scriptCode[scriptInfo->subPlayerInteraction.scriptCodePtr] > 0) {
                 while (activePlayer < activePlayerCount) {
                     if (playerList[activePlayer].objectInteractions)
                         ProcessScript(scriptInfo->subPlayerInteraction.scriptCodePtr, scriptInfo->subPlayerInteraction.jumpTablePtr,
@@ -110,12 +116,12 @@ void ProcessPausedObjects()
     for (objectLoop = 0; objectLoop < ENTITY_COUNT; ++objectLoop) {
         Entity *entity = &objectEntityList[objectLoop];
 
-        if (entity->priority == PRIORITY_ACTIVE_PAUSED && entity->type > OBJ_TYPE_BLANKOBJECT) {
+        if (entity->priority == PRIORITY_ALWAYS && entity->type > OBJ_TYPE_BLANKOBJECT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             activePlayer             = 0;
-            if (scriptData[scriptInfo->subMain.scriptCodePtr] > 0)
+            if (scriptCode[scriptInfo->subMain.scriptCodePtr] > 0)
                 ProcessScript(scriptInfo->subMain.scriptCodePtr, scriptInfo->subMain.jumpTablePtr, SUB_MAIN);
-            if (scriptData[scriptInfo->subPlayerInteraction.scriptCodePtr] > 0) {
+            if (scriptCode[scriptInfo->subPlayerInteraction.scriptCodePtr] > 0) {
                 while (activePlayer < PLAYER_COUNT) {
                     if (playerList[activePlayer].objectInteractions)
                         ProcessScript(scriptInfo->subPlayerInteraction.scriptCodePtr, scriptInfo->subPlayerInteraction.jumpTablePtr,

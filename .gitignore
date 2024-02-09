@@ -35,9 +35,18 @@ bin/
 [Bb]in/
 [Oo]bj/
 
-#safety
+#Safety
 *.rsdk
 *.ogv
+
+# Visual Studio Debugging
+RSDKv3/[Dd]ata/
+RSDKv3/[Mm]ods/
+RSDKv3/[Ss]cripts/
+RSDKv3/[Vv]ideos/
+RSDKv3/*.txt
+RSDKv3/*.ini
+RSDKv3/*.bin
 
 #OSX files
 *.DS_Store
@@ -76,7 +85,7 @@ bin/
 ![Dd]ependencies/ios/dependencies.txt
 ![Dd]ependencies/mac/dependencies.txt
 ![Dd]ependencies/windows-uwp/dependencies.txt
-![Dd]ependencies/android/dependencies.txt
+![Dd]ependencies/android/README.md
 ![Dd]ependencies/android/libogg/include/ogg/config_types.h
 
 RSDKv3UWP/Generated Files
@@ -278,6 +287,7 @@ Ignored/
 .gradle/
 .idea/
 android/key/
+android/app/.cxx
 android/local.properties
 *.apk
 

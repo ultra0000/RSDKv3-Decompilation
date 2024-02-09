@@ -11,7 +11,7 @@
 #include <tinyxml2.h>
 #endif
 
-#define PLAYER_MAX (0x10)
+#define PLAYERNAME_COUNT (0x10)
 
 struct ModInfo {
     std::string name;
@@ -21,7 +21,7 @@ struct ModInfo {
     std::map<std::string, std::string> fileMap;
     std::string folder;
     bool useScripts;
-    bool disableFocusPause;
+    int disableFocusPause;
     bool redirectSave;
     bool disableSaveIniOverride;
     std::string savePath;
@@ -41,15 +41,15 @@ extern char modScriptPaths[OBJECT_COUNT][0x40];
 extern byte modScriptFlags[OBJECT_COUNT];
 extern byte modObjCount;
 
-extern char playerNames[PLAYER_MAX][0x20];
+extern char playerNames[PLAYERNAME_COUNT][0x20];
 extern byte playerCount;
 
 inline void SetActiveMod(int id) { activeMod = id; }
 
-void initMods();
-bool loadMod(ModInfo *info, std::string modsPath, std::string folder, bool active);
-void scanModFolder(ModInfo *info);
-void saveMods();
+void InitMods();
+bool LoadMod(ModInfo *info, std::string modsPath, std::string folder, bool active);
+void ScanModFolder(ModInfo *info);
+void SaveMods();
 
 int OpenModMenu();
 

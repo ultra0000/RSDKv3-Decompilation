@@ -1,15 +1,12 @@
 #ifndef DRAWING_H
 #define DRAWING_H
 
-#define SURFACE_MAX (24)
-#define GFXDATA_MAX (0x800 * 0x800)
+// #define SURFACE_COUNT (24)
+#define SURFACE_COUNT (32) // originally 24, updated to 32 in sega forever vers
+#define GFXDATA_SIZE  (0x800 * 0x800)
 
-#define BLENDTABLE_YSIZE (0x100)
-#define BLENDTABLE_XSIZE (0x20)
-#define BLENDTABLE_SIZE  (BLENDTABLE_XSIZE * BLENDTABLE_YSIZE)
-#define TINTTABLE_SIZE   (0x1000)
-
-#define DRAWLAYER_COUNT (7)
+// usually 7, but origins has an extra one for some reason
+#define DRAWLAYER_COUNT (8)
 
 enum FlipFlags { FLIP_NONE, FLIP_X, FLIP_Y, FLIP_XY };
 enum InkFlags { INK_NONE, INK_BLEND, INK_ALPHA, INK_ADD, INK_SUB };
@@ -21,7 +18,8 @@ struct DrawListEntry {
 };
 
 struct GFXSurface {
-    char fileName[0x40];
+    // char fileName[0x40];
+    char fileName[0x80]; // originally 0x40, updated to 0x80 in sega forever vers
     int height;
     int width;
     int widthShifted;
@@ -30,9 +28,9 @@ struct GFXSurface {
     int dataPosition;
 };
 
-extern short blendLookupTable[BLENDTABLE_SIZE];
-extern short subtractLookupTable[BLENDTABLE_SIZE];
-extern short tintLookupTable[TINTTABLE_SIZE];
+extern ushort blendLookupTable[0x100 * 0x20];
+extern ushort subtractLookupTable[0x100 * 0x20];
+extern ushort tintLookupTable[0x10000];
 
 extern int SCREEN_XSIZE;
 extern int SCREEN_CENTERX;
@@ -41,20 +39,21 @@ extern int SCREEN_XSIZE_CONFIG;
 extern int touchWidth;
 extern int touchHeight;
 
-extern float videoAR;
-extern bool videoPlaying;
-
 extern DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 
 extern int gfxDataPosition;
-extern GFXSurface gfxSurface[SURFACE_MAX];
-extern byte graphicData[GFXDATA_MAX];
+extern GFXSurface gfxSurface[SURFACE_COUNT];
+extern byte graphicData[GFXDATA_SIZE];
 
-#define VERTEX_LIMIT        (0x2000)
-#define INDEX_LIMIT         (VERTEX_LIMIT * 6)
-#define VERTEX3D_LIMIT      (0x1904)
+#if RETRO_USE_ORIGINAL_CODE
+#define VERTEX_COUNT (0x2000)
+#else
+#define VERTEX_COUNT (0x4000) // doubled so debug overlays & etc work
+#endif
+#define INDEX_COUNT         (VERTEX_COUNT * 6)
+#define VERTEX3D_COUNT      (0x1904)
 #define TILEUV_SIZE         (0x1000)
-#define HW_TEXTURE_LIMIT    (6)
+#define HW_TEXTURE_COUNT    (6)
 #define HW_TEXTURE_SIZE     (0x400)
 #define HW_TEXTURE_DATASIZE (HW_TEXTURE_SIZE * HW_TEXTURE_SIZE * 2)
 #define HW_TEXBUFFER_SIZE   (HW_TEXTURE_SIZE * HW_TEXTURE_SIZE)
@@ -78,14 +77,14 @@ struct DrawVertex3D {
     Colour colour;
 };
 
-extern DrawVertex gfxPolyList[VERTEX_LIMIT];
-extern short gfxPolyListIndex[INDEX_LIMIT];
+extern DrawVertex gfxPolyList[VERTEX_COUNT];
+extern short gfxPolyListIndex[INDEX_COUNT];
 extern ushort gfxVertexSize;
 extern ushort gfxVertexSizeOpaque;
 extern ushort gfxIndexSize;
 extern ushort gfxIndexSizeOpaque;
 
-extern DrawVertex3D polyList3D[VERTEX3D_LIMIT];
+extern DrawVertex3D polyList3D[VERTEX3D_COUNT];
 
 extern ushort vertexSize3D;
 extern ushort indexSize3D;
@@ -116,7 +115,7 @@ extern float viewAngle;
 extern float viewAnglePos;
 
 #if RETRO_USING_OPENGL
-extern GLuint gfxTextureID[HW_TEXTURE_LIMIT];
+extern GLuint gfxTextureID[HW_TEXTURE_COUNT];
 extern GLuint framebufferHW;
 extern GLuint renderbufferHW;
 extern GLuint retroBuffer;
@@ -138,18 +137,18 @@ void FlipScreenVideo();
 
 void ReleaseRenderDevice();
 
-void setFullScreen(bool fs);
+void SetFullScreen(bool fs);
 
 void GenerateBlendLookupTable();
 
 inline void ClearGraphicsData()
 {
-    for (int i = 0; i < SURFACE_MAX; ++i) StrCopy(gfxSurface[i].fileName, "");
+    for (int i = 0; i < SURFACE_COUNT; ++i) StrCopy(gfxSurface[i].fileName, "");
     gfxDataPosition = 0;
 }
 void ClearScreen(byte index);
 
-void SetScreenSize(int width, int height);
+void SetScreenSize(int width, int lineSize);
 void CopyFrameOverlay2x();
 void TransferRetroBuffer();
 
@@ -175,6 +174,9 @@ void UpdateTextureBufferWithSprites();
 // Layer Drawing
 void DrawObjectList(int layer);
 void DrawStageGFX();
+#if !RETRO_USE_ORIGINAL_CODE
+void DrawDebugOverlays();
+#endif
 
 // TileLayer Drawing
 void DrawHLineScrollLayer(int layerID);

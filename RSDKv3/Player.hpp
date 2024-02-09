@@ -1,7 +1,13 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#define PLAYER_COUNT (0x2)
+#define PLAYER_COUNT (2)
+
+enum PlayerControlModes {
+    CONTROLMODE_NONE     = -1,
+    CONTROLMODE_NORMAL   = 0,
+    CONTROLMODE_SIDEKICK = 1,
+};
 
 struct Player {
     int entityNo;

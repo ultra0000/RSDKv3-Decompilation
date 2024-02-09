@@ -4,6 +4,15 @@
 #include <algorithm>
 #include <string>
 
+int strncmp(char const *a, char const *b)
+{
+    for (;; a++, b++) {
+        int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
+        if (d != 0 || !*a)
+            return d;
+    }
+}
+
 IniParser::IniParser(const char *filename, bool addPath)
 {
     items.clear();
@@ -33,7 +42,7 @@ IniParser::IniParser(const char *filename, bool addPath)
 
     FileIO *f;
     if ((f = fOpen(pathBuffer, "r")) == NULL) {
-        printLog("ERROR: Couldn't open file '%s'!", filename);
+        PrintLog("ERROR: Couldn't open file '%s'!", filename);
         return;
     }
 
@@ -124,7 +133,7 @@ int IniParser::GetFloat(const char *section, const char *key, float *dest)
         }
     }
 
-    return 0.0f;
+    return 0;
 }
 int IniParser::GetBool(const char *section, const char *key, bool *dest)
 {
@@ -134,7 +143,7 @@ int IniParser::GetBool(const char *section, const char *key, bool *dest)
     for (int x = 0; x < items.size(); x++) {
         if (!strcmp(section, items[x].section)) {
             if (!strcmp(key, items[x].key)) {
-                *dest = !strcmp(items[x].value, "true") || !strcmp(items[x].value, "1");
+                *dest = !strncmp(items[x].value, "true") || !strcmp(items[x].value, "1");
                 return 1;
             }
         }
@@ -276,7 +285,7 @@ void IniParser::Write(const char *filename, bool addPath)
 
     FileIO *f;
     if ((f = fOpen(pathBuffer, "w")) == NULL) {
-        printLog("ERROR: Couldn't open file '%s' for writing!", filename);
+        PrintLog("ERROR: Couldn't open file '%s' for writing!", filename);
         return;
     }
 

@@ -56,19 +56,19 @@ int globalVariables[GLOBALVAR_COUNT];
 char globalVariableNames[GLOBALVAR_COUNT][0x20];
 
 char gamePath[0x100];
-int saveRAM[SAVEDATA_MAX];
-Achievement achievements[ACHIEVEMENT_MAX];
-LeaderboardEntry leaderboards[LEADERBOARD_MAX];
+int saveRAM[SAVEDATA_SIZE];
+Achievement achievements[ACHIEVEMENT_COUNT];
+LeaderboardEntry leaderboards[LEADERBOARD_COUNT];
 
-#if RETRO_PLATFORM == RETRO_OSX
+#if RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_LINUX
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
 
-int controlMode               = -1;
-bool disableTouchControls     = false;
-bool disableFocusPause        = false;
-bool disableFocusPause_Config = false;
+int controlMode              = -1;
+bool disableTouchControls    = false;
+int disableFocusPause        = 0;
+int disableFocusPause_Config = 0;
 
 #if RETRO_USE_MOD_LOADER || !RETRO_USE_ORIGINAL_CODE
 bool forceUseScripts        = false;
@@ -76,6 +76,24 @@ bool forceUseScripts_Config = false;
 #endif
 
 bool useSGame = false;
+
+//#if RETRO_PLATFORM == RETRO_LINUX
+//std::string getXDGDataPath() 
+//{
+  //  std::string path;
+  //  char const *dataHome = getenv("XDG_DATA_HOME");
+  //  if (dataHome == NULL) {
+  //      char const *home = getenv("HOME");
+  //      path += home;
+  //      path += "/.local/share/";
+  //  }
+  //  else {
+  //      path += dataHome;
+  //  }
+ //   path += "/RSDKv3";
+  //  return path;
+//}
+//#endif
 
 bool ReadSaveRAMData()
 {
@@ -92,6 +110,8 @@ bool ReadSaveRAMData()
     sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //  sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -105,6 +125,8 @@ bool ReadSaveRAMData()
     sprintf(buffer, "%s/%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sSData.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+   // sprintf(buffer, "%s/%sSData.bin", getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
 #endif
@@ -114,8 +136,8 @@ bool ReadSaveRAMData()
 #if RETRO_USE_MOD_LOADER
     if (!disableSaveIniOverride) {
 #endif
-	    saveRAM[33] = bgmVolume;
-	    saveRAM[34] = sfxVolume;
+        saveRAM[33] = bgmVolume;
+        saveRAM[34] = sfxVolume;
 #if RETRO_USE_MOD_LOADER
     }
 #endif
@@ -133,6 +155,8 @@ bool ReadSaveRAMData()
         sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+    //    sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -146,6 +170,8 @@ bool ReadSaveRAMData()
         sprintf(buffer, "%s/%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSGame.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //      sprintf(buffer, "%s/%sSGame.bin", getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
 #endif
@@ -156,7 +182,7 @@ bool ReadSaveRAMData()
             return false;
         useSGame = true;
     }
-    fRead(saveRAM, 4, SAVEDATA_MAX, saveFile);
+    fRead(saveRAM, 4, SAVEDATA_SIZE, saveFile);
 
     fClose(saveFile);
     return true;
@@ -176,6 +202,8 @@ bool WriteSaveRAMData()
         sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+ //       sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -189,6 +217,8 @@ bool WriteSaveRAMData()
         sprintf(buffer, "%s/%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSData.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+   //     sprintf(buffer, "%s/%sSData.bin", getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
 #endif
@@ -205,6 +235,8 @@ bool WriteSaveRAMData()
         sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //      sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -218,6 +250,8 @@ bool WriteSaveRAMData()
         sprintf(buffer, "%s/%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
         sprintf(buffer, "%s/%sSGame.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //      sprintf(buffer, "%s/%sSGame.bin", getXDGDataPath().c_str(), savePath);
 #else
         sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
 #endif
@@ -232,14 +266,14 @@ bool WriteSaveRAMData()
 #if RETRO_USE_MOD_LOADER
     if (!disableSaveIniOverride) {
 #endif
-	    saveRAM[33] = bgmVolume;
-	    saveRAM[34] = sfxVolume;
+        saveRAM[33] = bgmVolume;
+        saveRAM[34] = sfxVolume;
 #if RETRO_USE_MOD_LOADER
     }
 #endif
 #endif
 
-    fWrite(saveRAM, 4, SAVEDATA_MAX, saveFile);
+    fWrite(saveRAM, 4, SAVEDATA_SIZE, saveFile);
     fClose(saveFile);
     return true;
 }
@@ -257,6 +291,11 @@ void InitUserdata()
     sprintf(modsPath, "%s/RSDKv3/", getResourcesPath());
 
     mkdir(gamePath, 0777);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+ //   sprintf(gamePath, "%s/", getXDGDataPath().c_str());
+  //  sprintf(modsPath, "%s/", getXDGDataPath().c_str());
+
+ //   mkdir(getXDGDataPath().c_str(), 0755);
 #elif RETRO_PLATFORM == RETRO_ANDROID
     {
         char buffer[0x200];
@@ -289,6 +328,8 @@ void InitUserdata()
     sprintf(buffer, "%s/settings.ini", gamePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/settings.ini", getDocumentsPath());
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //  sprintf(buffer, "%s/settings.ini", getXDGDataPath().c_str());
 #else
     sprintf(buffer, BASE_PATH "settings.ini");
 #endif
@@ -341,7 +382,9 @@ void InitUserdata()
         ini.SetInteger("Dev", "StartingCategory", Engine.startList = 0);
         ini.SetInteger("Dev", "StartingScene", Engine.startStage = 0);
         ini.SetInteger("Dev", "FastForwardSpeed", Engine.fastForwardSpeed = 8);
-        ini.SetBool("Dev", "UseSteamDir", Engine.useSteamDir = true);
+#if RETRO_PLATFORM == RETRO_WINDOWS
+        ini.SetBool("Dev", "UseSteamDir", Engine.useSteamDir = false);
+#endif
         ini.SetBool("Dev", "UseHQModes", Engine.useHQModes = true);
         sprintf(Engine.dataFile, "%s", "Data.rsdk");
         ini.SetString("Dev", "DataFile", Engine.dataFile);
@@ -350,9 +393,10 @@ void InitUserdata()
         Engine.startStage_Game = Engine.startStage;
 
         ini.SetInteger("Game", "Language", Engine.language = RETRO_EN);
+        ini.SetInteger("Game", "GameType", Engine.gameTypeID = 0);
         ini.SetInteger("Game", "OriginalControls", controlMode = -1);
         ini.SetBool("Game", "DisableTouchControls", disableTouchControls = false);
-        ini.SetBool("Game", "DisableFocusPause", disableFocusPause = false);
+        ini.SetInteger("Game", "DisableFocusPause", disableFocusPause = 0);
         disableFocusPause_Config = disableFocusPause;
 
         ini.SetBool("Window", "FullScreen", Engine.startFullScreen = DEFAULT_FULLSCREEN);
@@ -372,7 +416,8 @@ void InitUserdata()
         ini.SetFloat("Audio", "SFXVolume", sfxVolume / (float)MAX_VOLUME);
 
 #if RETRO_USING_SDL2
-        ini.SetComment("Keyboard 1", "IK1Comment", "Keyboard Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_Scancode)");
+        ini.SetComment("Keyboard 1", "IK1Comment",
+                       "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDLScancodeLookup.mediawiki)");
         ini.SetInteger("Keyboard 1", "Up", inputDevice[INPUT_UP].keyMappings = SDL_SCANCODE_UP);
         ini.SetInteger("Keyboard 1", "Down", inputDevice[INPUT_DOWN].keyMappings = SDL_SCANCODE_DOWN);
         ini.SetInteger("Keyboard 1", "Left", inputDevice[INPUT_LEFT].keyMappings = SDL_SCANCODE_LEFT);
@@ -382,7 +427,8 @@ void InitUserdata()
         ini.SetInteger("Keyboard 1", "C", inputDevice[INPUT_BUTTONC].keyMappings = SDL_SCANCODE_C);
         ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings = SDL_SCANCODE_RETURN);
 
-        ini.SetComment("Controller 1", "IC1Comment", "Controller Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_GameControllerButton)");
+        ini.SetComment("Controller 1", "IC1Comment",
+                       "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDL_GameControllerButton.mediawiki)");
         ini.SetInteger("Controller 1", "Up", inputDevice[INPUT_UP].contMappings = SDL_CONTROLLER_BUTTON_DPAD_UP);
         ini.SetInteger("Controller 1", "Down", inputDevice[INPUT_DOWN].contMappings = SDL_CONTROLLER_BUTTON_DPAD_DOWN);
         ini.SetInteger("Controller 1", "Left", inputDevice[INPUT_LEFT].contMappings = SDL_CONTROLLER_BUTTON_DPAD_LEFT);
@@ -409,7 +455,8 @@ void InitUserdata()
         ini.SetInteger("Keyboard 1", "C", inputDevice[INPUT_BUTTONC].keyMappings = SDLK_c);
         ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings = SDLK_RETURN);
 
-        ini.SetComment("Controller 1", "IC1Comment", "Controller Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_GameControllerButton)");
+        ini.SetComment("Controller 1", "IC1Comment",
+                       "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL_GameControllerButton.mediawiki)");
         ini.SetInteger("Controller 1", "Up", inputDevice[INPUT_UP].contMappings = 1);
         ini.SetInteger("Controller 1", "Down", inputDevice[INPUT_DOWN].contMappings = 2);
         ini.SetInteger("Controller 1", "Left", inputDevice[INPUT_LEFT].contMappings = 3);
@@ -444,8 +491,10 @@ void InitUserdata()
             Engine.startStage = 0;
         if (!ini.GetInteger("Dev", "FastForwardSpeed", &Engine.fastForwardSpeed))
             Engine.fastForwardSpeed = 8;
+#if RETRO_PLATFORM == RETRO_WINDOWS
         if (!ini.GetBool("Dev", "UseSteamDir", &Engine.useSteamDir))
-            Engine.useSteamDir = true;
+            Engine.useSteamDir = false;
+#endif
         if (!ini.GetBool("Dev", "UseHQModes", &Engine.useHQModes))
             Engine.useHQModes = true;
 
@@ -457,15 +506,19 @@ void InitUserdata()
 
         if (!ini.GetInteger("Game", "Language", &Engine.language))
             Engine.language = RETRO_EN;
+        if (!ini.GetInteger("Game", "GameType", &Engine.gameTypeID))
+            Engine.gameTypeID = 0;
+        Engine.releaseType = Engine.gameTypeID ? "Use_Origins" : "Use_Standalone";
 
         if (!ini.GetInteger("Game", "OriginalControls", &controlMode))
             controlMode = -1;
         if (!ini.GetBool("Game", "DisableTouchControls", &disableTouchControls))
             disableTouchControls = false;
-        if (!ini.GetBool("Game", "DisableFocusPause", &disableFocusPause))
-            disableFocusPause = false;
+        if (!ini.GetInteger("Game", "DisableFocusPause", &disableFocusPause))
+            disableFocusPause = 0;
         disableFocusPause_Config = disableFocusPause;
-        int platype              = -1;
+
+        int platype = -1;
         ini.GetInteger("Game", "Platform", &platype);
         if (platype != -1) {
             if (!platype)
@@ -614,7 +667,6 @@ void InitUserdata()
             RTRIGGER_DEADZONE = 0.3;
 #endif
     }
-    SetScreenSize(SCREEN_XSIZE, SCREEN_YSIZE);
 
     // Loaded here so it can be disabled
 #if RETRO_PLATFORM == RETRO_WIN && _MSC_VER
@@ -695,7 +747,7 @@ void InitUserdata()
 
         int nummaps = SDL_GameControllerAddMappingsFromFile(buffer);
         if (nummaps >= 0)
-            printLog("loaded %d controller mappings from '%s'\n", buffer, nummaps);
+            PrintLog("loaded %d controller mappings from '%s'\n", buffer, nummaps);
     }
 #endif
 
@@ -708,6 +760,8 @@ void InitUserdata()
     sprintf(buffer, "%s/UData.bin", gamePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/UData.bin", getDocumentsPath());
+//#elif RETRO_PLATFORM == RETRO_LINUX
+   // sprintf(buffer, "%s/UData.bin", getXDGDataPath().c_str());
 #else
     sprintf(buffer, "%sUdata.bin", gamePath);
 #endif
@@ -734,7 +788,7 @@ void InitUserdata()
     StrCopy(achievements[11].name, "Saviour of the Planet");
 }
 
-void writeSettings()
+void WriteSettings()
 {
     IniParser ini;
 
@@ -751,8 +805,10 @@ void writeSettings()
     ini.SetInteger("Dev", "StartingScene", Engine.startStage);
     ini.SetComment("Dev", "FFComment", "Determines how fast the game will be when fastforwarding is active");
     ini.SetInteger("Dev", "FastForwardSpeed", Engine.fastForwardSpeed);
-    ini.SetComment("Dev", "SDComment", "Determines if the game will try to use the steam directory for the game if it can locate it (Windows only)");
+#if RETRO_PLATFORM == RETRO_WINDOWS
+    ini.SetComment("Dev", "SDComment", "Determines if the game will try to use the steam directory for the game if it can locate it");
     ini.SetBool("Dev", "UseSteamDir", Engine.useSteamDir);
+#endif
     ini.SetComment(
         "Dev", "UseHQComment",
         "Determines if applicable rendering modes (such as 3D floor from special stages) will render in \"High Quality\" mode or standard mode");
@@ -763,12 +819,15 @@ void writeSettings()
 
     ini.SetComment("Game", "LangComment", "Sets the game language (0 = EN, 1 = FR, 2 = IT, 3 = DE, 4 = ES, 5 = JP)");
     ini.SetInteger("Game", "Language", Engine.language);
+    ini.SetComment("Game", "GameTypeComment", "Determines game type in scripts (0 = Standalone/Original releases, 1 = Origins release)");
+    ini.SetInteger("Game", "GameType", Engine.gameTypeID);
     ini.SetComment("Game", "OGCtrlComment", "Sets the game's spindash style (-1 = let save file decide, 0 = S2, 1 = CD)");
     ini.SetInteger("Game", "OriginalControls", controlMode);
     ini.SetComment("Game", "DTCtrlComment", "Determines if the game should hide the touch controls UI");
     ini.SetBool("Game", "DisableTouchControls", disableTouchControls);
-    ini.SetComment("Game", "DFPMenuComment", "If set to true, disables the game pausing when focus is lost");
-    ini.SetBool("Game", "DisableFocusPause", disableFocusPause_Config);
+    ini.SetComment("Game", "DFPMenuComment",
+                   "Handles pausing behaviour when focus is lost\n; 0 = Game focus enabled, engine focus enabled\n; 1 = Game focus enabled, engine focus disabled\n; 2 = Game focus disabled, engine focus disabled");
+    ini.SetInteger("Game", "DisableFocusPause", disableFocusPause_Config);
     ini.SetComment("Game", "PlatformComment", "The platform type. 0 is standard (PC/Console), 1 is mobile");
     ini.SetInteger("Game", "Platform", !StrComp(Engine.gamePlatform, "Standard"));
 
@@ -776,7 +835,8 @@ void writeSettings()
     ini.SetBool("Window", "FullScreen", Engine.startFullScreen);
     ini.SetComment("Window", "BLComment", "Determines if the window will be borderless or not");
     ini.SetBool("Window", "Borderless", Engine.borderless);
-    ini.SetComment("Window", "VSComment", "Determines if VSync will be active or not");
+    ini.SetComment("Window", "VSComment",
+                   "Determines if VSync will be active or not (not recommended as the engine is built around running at 60 FPS)");
     ini.SetBool("Window", "VSync", Engine.vsync);
     ini.SetComment("Window", "SMComment", "Determines what scaling is used. 0 is nearest neighbour, 1 or higher is linear.");
     ini.SetInteger("Window", "ScalingMode", Engine.scalingMode);
@@ -796,12 +856,11 @@ void writeSettings()
 
 #if RETRO_USING_SDL2
     ini.SetComment("Keyboard 1", "IK1Comment",
-                   "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDLScancodeLookup.mediawiki)");
+                   "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDLScancodeLookup.mediawiki)");
 #endif
 #if RETRO_USING_SDL1
     ini.SetComment("Keyboard 1", "IK1Comment", "Keyboard Mappings for P1 (Based on: https://wiki.libsdl.org/SDLKeycodeLookup)");
 #endif
-    ini.SetComment("Keyboard 1", "IK1Comment", "Keyboard Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_Scancode)");
     ini.SetInteger("Keyboard 1", "Up", inputDevice[INPUT_UP].keyMappings);
     ini.SetInteger("Keyboard 1", "Down", inputDevice[INPUT_DOWN].keyMappings);
     ini.SetInteger("Keyboard 1", "Left", inputDevice[INPUT_LEFT].keyMappings);
@@ -813,7 +872,7 @@ void writeSettings()
 
 #if RETRO_USING_SDL2
     ini.SetComment("Controller 1", "IC1Comment",
-                   "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDLScancodeLookup.mediawiki)");
+                   "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDL_GameControllerButton.mediawiki)");
     ini.SetComment("Controller 1", "IC1Comment2", "Extra buttons can be mapped with the following IDs:");
     ini.SetComment("Controller 1", "IC1Comment3", "CONTROLLER_BUTTON_ZL             = 16");
     ini.SetComment("Controller 1", "IC1Comment4", "CONTROLLER_BUTTON_ZR             = 17");
@@ -851,6 +910,8 @@ void writeSettings()
     sprintf(buffer, "%s/settings.ini", gamePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/settings.ini", getDocumentsPath());
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //  sprintf(buffer, "%s/settings.ini", getXDGDataPath().c_str());
 #else
     sprintf(buffer, BASE_PATH "settings.ini");
 #endif
@@ -871,6 +932,8 @@ void ReadUserdata()
     sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //  sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -884,6 +947,8 @@ void ReadUserdata()
     sprintf(buffer, "%s/%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sUData.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+  //  sprintf(buffer, "%s/%sUData.bin", getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
 #endif
@@ -894,11 +959,11 @@ void ReadUserdata()
         return;
 
     int buf = 0;
-    for (int a = 0; a < ACHIEVEMENT_MAX; ++a) {
+    for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) {
         fRead(&buf, 4, 1, userFile);
         achievements[a].status = buf;
     }
-    for (int l = 0; l < LEADERBOARD_MAX; ++l) {
+    for (int l = 0; l < LEADERBOARD_COUNT; ++l) {
         fRead(&buf, 4, 1, userFile);
         leaderboards[l].score = buf;
         if (!leaderboards[l].score)
@@ -925,6 +990,8 @@ void WriteUserdata()
     sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+ //   sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
@@ -938,6 +1005,8 @@ void WriteUserdata()
     sprintf(buffer, "%s/%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
     sprintf(buffer, "%s/%sUData.bin", getDocumentsPath(), savePath);
+//#elif RETRO_PLATFORM == RETRO_LINUX
+ //   sprintf(buffer, "%s/%sUData.bin", getXDGDataPath().c_str(), savePath);
 #else
     sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
 #endif
@@ -947,8 +1016,8 @@ void WriteUserdata()
     if (!userFile)
         return;
 
-    for (int a = 0; a < ACHIEVEMENT_MAX; ++a) fWrite(&achievements[a].status, 4, 1, userFile);
-    for (int l = 0; l < LEADERBOARD_MAX; ++l) fWrite(&leaderboards[l].score, 4, 1, userFile);
+    for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 4, 1, userFile);
+    for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 4, 1, userFile);
 
     fClose(userFile);
 
@@ -959,11 +1028,11 @@ void WriteUserdata()
 
 void AwardAchievement(int id, int status)
 {
-    if (id < 0 || id >= ACHIEVEMENT_MAX)
+    if (id < 0 || id >= ACHIEVEMENT_COUNT)
         return;
 
     if (status != achievements[id].status)
-        printLog("Achieved achievement: %s (%d)!", achievements[id].name, status);
+        PrintLog("Achieved achievement: %s (%d)!", achievements[id].name, status);
 
     achievements[id].status = status;
 
@@ -983,12 +1052,12 @@ void SetLeaderboard(int leaderboardID, int result)
 {
     if (!Engine.trialMode && !debugMode) {
         if (result < leaderboards[leaderboardID].score) {
-            printLog("Set leaderboard (%d) value to %d", leaderboardID, result);
+            PrintLog("Set leaderboard (%d) value to %d", leaderboardID, result);
             leaderboards[leaderboardID].score = result;
             WriteUserdata();
         }
         else {
-            printLog("Attempted to set leaderboard (%d) value to %d... but score was already %d!", leaderboardID, result,
+            PrintLog("Attempted to set leaderboard (%d) value to %d... but score was already %d!", leaderboardID, result,
                      leaderboards[leaderboardID].score);
         }
     }

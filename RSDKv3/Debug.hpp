@@ -5,7 +5,7 @@
 #include <android/log.h>
 #endif
 
-inline void printLog(const char *msg, ...)
+inline void PrintLog(const char *msg, ...)
 {
     if (engineDebugMode) {
         char buffer[0x100];
@@ -43,11 +43,13 @@ enum DevMenuMenus {
     DEVMENU_STAGELISTSEL,
     DEVMENU_STAGESEL,
     DEVMENU_SCRIPTERROR,
+#if RETRO_USE_MOD_LOADER
     DEVMENU_MODMENU,
+#endif
 };
 
-void initDevMenu();
-void initErrorMessage();
-void processStageSelect();
+void InitDevMenu();
+void InitErrorMessage();
+void ProcessStageSelect();
 
 #endif //! DEBUG_H

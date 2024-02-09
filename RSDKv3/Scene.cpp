@@ -13,8 +13,8 @@ SceneInfo stageList[STAGELIST_MAX][0x100];
 int stageMode = STAGEMODE_LOAD;
 
 int cameraTarget   = -1;
-int cameraStyle    = 0;
-int cameraEnabled  = 0;
+int cameraStyle    = CAMERASTYLE_FOLLOW;
+int cameraEnabled  = false;
 int cameraAdjustY  = 0;
 int xScrollOffset  = 0;
 int yScrollOffset  = 0;
@@ -79,7 +79,7 @@ CollisionMasks collisionMasks[2];
 
 byte tilesetGFXData[TILESET_SIZE];
 
-ushort tile3DFloorBuffer[0x13334];
+ushort tile3DFloorBuffer[0x100 * 0x100];
 bool drawStageGFXHQ = false;
 
 #if RETRO_USE_MOD_LOADER
@@ -105,10 +105,13 @@ void InitFirstStage()
 #endif
     stageMode       = STAGEMODE_LOAD;
     Engine.gameMode = ENGINE_MAINGAME;
-    // activeStageList   = 0;
-    // stageListPosition = 0;
+#if !RETRO_USE_ORIGINAL_CODE
     activeStageList   = Engine.startList_Game == 0xFF ? 0 : Engine.startList_Game;
     stageListPosition = Engine.startStage_Game == 0xFF ? 0 : Engine.startStage_Game;
+#else
+    activeStageList   = 0;
+    stageListPosition = 0;
+#endif
 }
 
 void ProcessStage(void)
@@ -122,7 +125,7 @@ void ProcessStage(void)
             fadeMode = 0;
             SetActivePalette(0, 0, 256);
 
-            cameraEnabled = 1;
+            cameraEnabled = true;
             cameraTarget  = -1;
             cameraAdjustY = 0;
             xScrollOffset = 0;
@@ -137,6 +140,19 @@ void ProcessStage(void)
 
             vertexCount = 0;
             faceCount   = 0;
+
+#if RSDK_AUTOBUILD
+            // Prevent playing as Knuckles or Amy if on autobuilds
+            if (GetGlobalVariableByName("PLAYER_KNUCKLES") && playerListPos == GetGlobalVariableByName("PLAYER_KNUCKLES"))
+                playerListPos = 0;
+            else if (GetGlobalVariableByName("PLAYER_KNUCKLES_TAILS") && playerListPos == GetGlobalVariableByName("PLAYER_KNUCKLES_TAILS"))
+                playerListPos = 0;
+            else if (GetGlobalVariableByName("PLAYER_AMY") && playerListPos == GetGlobalVariableByName("PLAYER_AMY"))
+                playerListPos = 0;
+            else if (GetGlobalVariableByName("PLAYER_AMY_TAILS") && playerListPos == GetGlobalVariableByName("PLAYER_AMY_TAILS"))
+                playerListPos = 0;
+#endif
+
             for (int i = 0; i < PLAYER_COUNT; ++i) {
                 playerList[i].XPos               = 0;
                 playerList[i].YPos               = 0;
@@ -168,7 +184,7 @@ void ProcessStage(void)
             Engine.frameCount = 0;
             stageMode         = STAGEMODE_NORMAL;
 #if RETRO_USE_MOD_LOADER
-            for (int m = 0; m < modList.size(); ++m) scanModFolder(&modList[m]);
+            for (int m = 0; m < modList.size(); ++m) ScanModFolder(&modList[m]);
 #endif
             ResetBackgroundSettings();
             LoadStageFiles();
@@ -187,7 +203,7 @@ void ProcessStage(void)
                 if (tilesetGFXData[0x32002] > 0)
                     texBufferMode = 0;
 
-                if (texBufferMode) {
+                if (texBufferMode) {  // 3D Sky/HParallax version
                     for (int i = 0; i < TILEUV_SIZE; i += 4) {
                         tileUVArray[i + 0] = ((i >> 2) % 28) * 18 + 1;
                         tileUVArray[i + 1] = ((i >> 2) / 28) * 18 + 1;
@@ -199,7 +215,7 @@ void ProcessStage(void)
                     tileUVArray[TILEUV_SIZE - 2] = 503;
                     tileUVArray[TILEUV_SIZE - 1] = 503;
                 }
-                else {
+                else { // Regular tileset version
                     for (int i = 0; i < TILEUV_SIZE; i += 4) {
                         tileUVArray[i + 0] = (i >> 2 & 31) * 16;
                         tileUVArray[i + 1] = (i >> 2 >> 5) * 16;
@@ -215,6 +231,7 @@ void ProcessStage(void)
                 gfxVertexSizeOpaque = 0;
             }
             break;
+
         case STAGEMODE_NORMAL:
             drawStageGFXHQ = false;
             if (fadeMode > 0)
@@ -255,11 +272,11 @@ void ProcessStage(void)
             if (cameraTarget > -1) {
                 if (cameraEnabled == 1) {
                     switch (cameraStyle) {
-                        case 0: SetPlayerScreenPosition(&playerList[cameraTarget]); break;
-                        case 1: SetPlayerScreenPositionCDStyle(&playerList[cameraTarget]); break;
-                        case 2: SetPlayerScreenPositionCDStyle(&playerList[cameraTarget]); break;
-                        case 3: SetPlayerScreenPositionCDStyle(&playerList[cameraTarget]); break;
-                        case 4: SetPlayerHLockedScreenPosition(&playerList[cameraTarget]); break;
+                        case CAMERASTYLE_FOLLOW: SetPlayerScreenPosition(&playerList[cameraTarget]); break;
+                        case CAMERASTYLE_EXTENDED:
+                        case CAMERASTYLE_EXTENDED_OFFSET_L:
+                        case CAMERASTYLE_EXTENDED_OFFSET_R: SetPlayerScreenPositionCDStyle(&playerList[cameraTarget]); break;
+                        case CAMERASTYLE_HLOCKED: SetPlayerHLockedScreenPosition(&playerList[cameraTarget]); break;
                         default: break;
                     }
                 }
@@ -270,6 +287,7 @@ void ProcessStage(void)
 
             DrawStageGFX();
             break;
+
         case STAGEMODE_PAUSED:
             drawStageGFXHQ = false;
             if (fadeMode > 0)
@@ -300,7 +318,17 @@ void ProcessStage(void)
             DrawObjectList(3);
             DrawObjectList(4);
             DrawObjectList(5);
+#if !RETRO_USE_ORIGINAL_CODE
+            // Hacky fix for Tails Object not working properly on non-Origins bytecode
+            if (forceUseScripts || GetGlobalVariableByName("NOTIFY_1P_VS_SELECT") != 0)
+#endif
+                DrawObjectList(7); // Extra Origins draw list (who knows why it comes before 6)
             DrawObjectList(6);
+
+#if !RETRO_USE_ORIGINAL_CODE
+            DrawDebugOverlays();
+#endif
+
             if (pauseEnabled && keyPress.start) {
                 stageMode = STAGEMODE_NORMAL;
                 ResumeSound();
@@ -321,14 +349,14 @@ void LoadStageFiles(void)
     char strBuffer[0x100];
 
     if (!CheckCurrentStageFolder(stageListPosition)) {
-        printLog("Loading Scene %s - %s", stageListNames[activeStageList], stageList[activeStageList][stageListPosition].name);
+        PrintLog("Loading Scene %s - %s", stageListNames[activeStageList], stageList[activeStageList][stageListPosition].name);
         ReleaseStageSfx();
         LoadPalette("MasterPalette.act", 0, 0, 0, 256);
 #if RETRO_USE_MOD_LOADER
         Engine.LoadXMLPalettes();
 #endif
         ClearScriptData();
-        for (int i = SURFACE_MAX; i > 0; i--) RemoveGraphicsFile((char *)"", i - 1);
+        for (int i = SURFACE_COUNT; i > 0; i--) RemoveGraphicsFile((char *)"", i - 1);
 
 #if RETRO_USE_MOD_LOADER
         loadGlobalScripts = false;
@@ -359,12 +387,13 @@ void LoadStageFiles(void)
                 SetObjectTypeName(strBuffer, i + scriptID);
             }
 
-#if RETRO_USE_MOD_LOADER
+#if RETRO_USE_MOD_LOADER && RETRO_USE_COMPILER
             for (byte i = 0; i < modObjCount && loadGlobalScripts; ++i) {
                 SetObjectTypeName(modTypeNames[i], globalObjectCount + i + 1);
             }
 #endif
 
+#if RETRO_USE_COMPILER
 #if RETRO_USE_MOD_LOADER
             char scriptPath[0x40];
             if (Engine.bytecodeMode == BYTECODE_MOBILE)
@@ -405,9 +434,16 @@ void LoadStageFiles(void)
                         return;
                 }
             }
+#else
+            GetFileInfo(&infoStore);
+            CloseFile();
+            LoadBytecode(4, scriptID);
+            scriptID += globalObjectCount;
+            SetFileInfo(&infoStore);
+#endif
             CloseFile();
 
-#if RETRO_USE_MOD_LOADER
+#if RETRO_USE_MOD_LOADER && RETRO_USE_COMPILER
             globalObjCount = globalObjectCount;
             for (byte i = 0; i < modObjCount && loadGlobalScripts; ++i) {
                 SetObjectTypeName(modTypeNames[i], scriptID);
@@ -438,6 +474,8 @@ void LoadStageFiles(void)
                 strBuffer[fileBuffer2] = 0;
                 SetObjectTypeName(strBuffer, scriptID + i);
             }
+
+#if RETRO_USE_COMPILER
 #if RETRO_USE_MOD_LOADER
             char scriptPath[0x40];
             if (Engine.bytecodeMode == BYTECODE_MOBILE) {
@@ -465,6 +503,7 @@ void LoadStageFiles(void)
                     scriptPath[pos + 4] = stageListPosition % 10 + '0';
                 }
             }
+
             bool bytecodeExists = false;
             FileInfo bytecodeInfo;
             GetFileInfo(&infoStore);
@@ -502,6 +541,17 @@ void LoadStageFiles(void)
                         return;
                 }
             }
+#else
+            for (byte i = 0; i < stageObjectCount; ++i) {
+                FileRead(&fileBuffer2, 1);
+                FileRead(strBuffer, fileBuffer2);
+                strBuffer[fileBuffer2] = 0;
+            }
+            GetFileInfo(&infoStore);
+            CloseFile();
+            LoadBytecode(activeStageList, scriptID);
+            SetFileInfo(&infoStore);
+#endif
 
             FileRead(&fileBuffer2, 1);
             stageSFXCount = fileBuffer2;
@@ -531,36 +581,15 @@ void LoadStageFiles(void)
         LoadStageBackground();
     }
     else {
-        printLog("Reloading Scene %s - %s", stageListNames[activeStageList], stageList[activeStageList][stageListPosition].name);
+        PrintLog("Reloading Scene %s - %s", stageListNames[activeStageList], stageList[activeStageList][stageListPosition].name);
     }
     LoadStageChunks();
     for (int i = 0; i < TRACK_COUNT; ++i) SetMusicTrack((char *)"", i, 0, 0);
     for (int i = 0; i < ENTITY_COUNT; ++i) {
-        objectEntityList[i].type           = 0;
-        objectEntityList[i].direction      = 0;
-        objectEntityList[i].animation      = 0;
-        objectEntityList[i].prevAnimation  = 0;
-        objectEntityList[i].animationSpeed = 0;
-        objectEntityList[i].animationTimer = 0;
-        objectEntityList[i].frame          = 0;
-        objectEntityList[i].priority       = 0;
-        objectEntityList[i].direction      = 0;
-        objectEntityList[i].rotation       = 0;
-        objectEntityList[i].state          = 0;
-        objectEntityList[i].propertyValue  = 0;
-        objectEntityList[i].XPos           = 0;
-        objectEntityList[i].YPos           = 0;
-        objectEntityList[i].drawOrder      = 3;
-        objectEntityList[i].scale          = 512;
-        objectEntityList[i].inkEffect      = 0;
-        objectEntityList[i].values[0]      = 0;
-        objectEntityList[i].values[1]      = 0;
-        objectEntityList[i].values[2]      = 0;
-        objectEntityList[i].values[3]      = 0;
-        objectEntityList[i].values[4]      = 0;
-        objectEntityList[i].values[5]      = 0;
-        objectEntityList[i].values[6]      = 0;
-        objectEntityList[i].values[7]      = 0;
+        memset(&objectEntityList[i], 0, sizeof(objectEntityList[i]));
+
+        objectEntityList[i].drawOrder = 3;
+        objectEntityList[i].scale     = 512;
     }
     LoadActLayout();
     Init3DFloorBuffer(0);
@@ -612,24 +641,24 @@ void LoadActLayout()
         FileRead(activeTileLayers, 4);
         FileRead(&tLayerMidPoint, 1);
 
-        FileRead(&stageLayouts[0].width, 1);
-        FileRead(&stageLayouts[0].height, 1);
+        FileRead(&stageLayouts[0].xsize, 1);
+        FileRead(&stageLayouts[0].ysize, 1);
         xBoundary1    = 0;
         newXBoundary1 = 0;
         yBoundary1    = 0;
         newYBoundary1 = 0;
-        xBoundary2    = stageLayouts[0].width << 7;
-        yBoundary2    = stageLayouts[0].height << 7;
+        xBoundary2    = stageLayouts[0].xsize << 7;
+        yBoundary2    = stageLayouts[0].ysize << 7;
         waterLevel    = yBoundary2 + 128;
-        newXBoundary2 = stageLayouts[0].width << 7;
-        newYBoundary2 = stageLayouts[0].height << 7;
+        newXBoundary2 = stageLayouts[0].xsize << 7;
+        newYBoundary2 = stageLayouts[0].ysize << 7;
 
         for (int i = 0; i < 0x10000; ++i) stageLayouts[0].tiles[i] = 0;
 
         byte fileBuffer = 0;
-        for (int y = 0; y < stageLayouts[0].height; ++y) {
+        for (int y = 0; y < stageLayouts[0].ysize; ++y) {
             ushort *tiles = &stageLayouts[0].tiles[(y * 0x100)];
-            for (int x = 0; x < stageLayouts[0].width; ++x) {
+            for (int x = 0; x < stageLayouts[0].xsize; ++x) {
                 FileRead(&fileBuffer, 1);
                 tiles[x] = fileBuffer << 8;
                 FileRead(&fileBuffer, 1);
@@ -656,7 +685,7 @@ void LoadActLayout()
 
 #if !RETRO_USE_ORIGINAL_CODE
         if (ObjectCount > 0x400)
-            printLog("WARNING: object count %d exceeds the object limit", ObjectCount);
+            PrintLog("WARNING: object count %d exceeds the object limit", ObjectCount);
 #endif
 
 #if RETRO_USE_MOD_LOADER
@@ -672,7 +701,7 @@ void LoadActLayout()
             object->type = fileBuffer;
 
 #if RETRO_USE_MOD_LOADER
-            if (loadGlobalScripts && offsetCount && object->type >= globalObjCount)
+            if (loadGlobalScripts && offsetCount && object->type > globalObjCount)
                 object->type += offsetCount; // offset it by our mod count
 #endif
 
@@ -746,9 +775,9 @@ void LoadStageBackground()
 
         for (int i = 1; i < layerCount + 1; ++i) {
             FileRead(&fileBuffer, 1);
-            stageLayouts[i].width = fileBuffer;
+            stageLayouts[i].xsize = fileBuffer;
             FileRead(&fileBuffer, 1);
-            stageLayouts[i].height = fileBuffer;
+            stageLayouts[i].ysize = fileBuffer;
             FileRead(&fileBuffer, 1);
             stageLayouts[i].type = fileBuffer;
             FileRead(&fileBuffer, 1);
@@ -759,7 +788,7 @@ void LoadStageBackground()
             stageLayouts[i].scrollSpeed = fileBuffer << 10;
             stageLayouts[i].scrollPos   = 0;
 
-            memset(stageLayouts[i].tiles, 0, TILELAYER_CHUNK_MAX * sizeof(ushort));
+            memset(stageLayouts[i].tiles, 0, TILELAYER_CHUNK_COUNT * sizeof(ushort));
             byte *lineScrollPtr = stageLayouts[i].lineScroll;
             memset(stageLayouts[i].lineScroll, 0, 0x7FFF);
 
@@ -785,9 +814,9 @@ void LoadStageBackground()
             }
 
             // Read Layout
-            for (int y = 0; y < stageLayouts[i].height; ++y) {
+            for (int y = 0; y < stageLayouts[i].ysize; ++y) {
                 ushort *chunks = &stageLayouts[i].tiles[y * 0x100];
-                for (int x = 0; x < stageLayouts[i].width; ++x) {
+                for (int x = 0; x < stageLayouts[i].xsize; ++x) {
                     FileRead(&fileBuffer, 1);
                     *chunks = fileBuffer << 8;
                     FileRead(&fileBuffer, 1);
@@ -1154,13 +1183,13 @@ void SetLayerDeformation(int selectedDef, int waveLength, int waveWidth, int wav
     if (waveType == 1) {
         id = YPos;
         for (int i = 0; i < waveSize; ++i) {
-            deformPtr[id] = waveWidth * sinVal512[(i << 9) / waveLength & 0x1FF] >> shift;
+            deformPtr[id] = waveWidth * sin512LookupTable[(i << 9) / waveLength & 0x1FF] >> shift;
             ++id;
         }
     }
     else {
         for (int i = 0; i < 0x200 * 0x100; i += 0x200) {
-            int val       = waveWidth * sinVal512[i / waveLength & 0x1FF] >> shift;
+            int val       = waveWidth * sin512LookupTable[i / waveLength & 0x1FF] >> shift;
             deformPtr[id] = val;
             if (deformPtr[id] >= waveWidth && renderType == RENDER_SW)
                 deformPtr[id] = waveWidth - 1;
@@ -1446,13 +1475,13 @@ void SetPlayerScreenPositionCDStyle(Player *player)
     }
     if (!player->gravity) {
         if (player->boundEntity->direction) {
-            if (cameraStyle == 3 || player->speed < -0x5F5C2)
+            if (cameraStyle == CAMERASTYLE_EXTENDED_OFFSET_R || player->speed < -0x5F5C2)
                 cameraLagStyle = 2;
             else
                 cameraLagStyle = 0;
         }
         else {
-            cameraLagStyle = (cameraStyle == 2 || player->speed > 0x5F5C2) != 0;
+            cameraLagStyle = (cameraStyle == CAMERASTYLE_EXTENDED_OFFSET_L || player->speed > 0x5F5C2) != 0;
         }
     }
     if (cameraLagStyle) {

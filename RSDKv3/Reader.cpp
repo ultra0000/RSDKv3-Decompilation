@@ -28,18 +28,26 @@ bool CheckRSDKFile(const char *filePath)
     FileInfo info;
 
     char filePathBuffer[0x100];
-    sprintf(filePathBuffer, "%s", filePath);
-#if RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_ANDROID
+#if RETRO_PLATFORM == RETRO_OSX
     sprintf(filePathBuffer, "%s/%s", gamePath, filePath);
+#else
+    sprintf(filePathBuffer, "%s", filePath);
 #endif
 
-    Engine.usingDataFile      = false;
-    Engine.usingDataFileStore = false;
-    Engine.usingBytecode      = false;
+    Engine.usingDataFile = false;
+#if !RETRO_USE_ORIGINAL_CODE
+    Engine.usingDataFile_Config = false;
+    Engine.usingDataFileStore   = false;
+#endif
+    Engine.usingBytecode = false;
 
     cFileHandle = fOpen(filePathBuffer, "rb");
     if (cFileHandle) {
         Engine.usingDataFile = true;
+#if !RETRO_USE_ORIGINAL_CODE
+        Engine.usingDataFile_Config = true;
+#endif
+
         StrCopy(rsdkName, filePathBuffer);
         fClose(cFileHandle);
         cFileHandle = NULL;
@@ -57,7 +65,11 @@ bool CheckRSDKFile(const char *filePath)
     }
     else {
         Engine.usingDataFile = false;
-        cFileHandle          = NULL;
+#if !RETRO_USE_ORIGINAL_CODE
+        Engine.usingDataFile_Config = false;
+#endif
+
+        cFileHandle = NULL;
         if (LoadFile("Data/Scripts/ByteCode/GlobalCode.bin", &info)) {
             Engine.usingBytecode = true;
             Engine.bytecodeMode  = BYTECODE_MOBILE;
@@ -112,31 +124,23 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
     }
 
 #if RETRO_USE_MOD_LOADER
-    if (activeMod != -1) {
-        char buf[0x100];
-        sprintf(buf, "%s", filePathBuf);
-        sprintf(filePathBuf, "%smods/%s/%s", modsPath, modList[activeMod].folder.c_str(), buf);
-        Engine.forceFolder   = true;
-        Engine.usingDataFile = false;
-        fileInfo->isMod      = true;
-        isModdedFile         = true;
-        addPath              = false;
-    }
-    else {
-        for (int m = 0; m < modList.size(); ++m) {
-            if (modList[m].active) {
-                std::map<std::string, std::string>::const_iterator iter = modList[m].fileMap.find(pathLower);
-                if (iter != modList[m].fileMap.cend()) {
-                    StrCopy(filePathBuf, iter->second.c_str());
-                    Engine.forceFolder   = true;
-                    Engine.usingDataFile = false;
-                    fileInfo->isMod      = true;
-                    isModdedFile         = true;
-                    addPath              = false;
-                    break;
-                }
+    int m = activeMod != -1 ? activeMod : 0;
+ 
+    for (; m < modList.size(); ++m) {
+        if (modList[m].active) {
+            std::map<std::string, std::string>::const_iterator iter = modList[m].fileMap.find(pathLower);
+            if (iter != modList[m].fileMap.cend()) {
+                StrCopy(filePathBuf, iter->second.c_str());
+                Engine.forceFolder   = true;
+                Engine.usingDataFile = false;
+                fileInfo->isMod      = true;
+                isModdedFile         = true;
+                addPath              = false;
+                break;
             }
         }
+        if (activeMod != -1)
+            break;
     }
 
     if (forceUseScripts && !Engine.forceFolder) {
@@ -192,7 +196,7 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
         if (!ParseVirtualFileSystem(fileInfo)) {
             fClose(cFileHandle);
             cFileHandle = NULL;
-            printLog("Couldn't load file '%s'", filePath);
+            PrintLog("Couldn't load file '%s'", filePath);
             return false;
         }
         fileInfo->readPos           = readPos;
@@ -210,7 +214,7 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
         StrCopy(fileName, filePathBuf);
         cFileHandle = fOpen(fileInfo->fileName, "rb");
         if (!cFileHandle) {
-            printLog("Couldn't load file '%s'", filePathBuf);
+            PrintLog("Couldn't load file '%s'", filePathBuf);
             return false;
         }
 
@@ -235,7 +239,7 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
     bufferPosition = 0;
     readSize       = 0;
 
-    printLog("Loaded File '%s'", filePathBuf);
+    PrintLog("Loaded File '%s'", filePathBuf);
 
     return true;
 }

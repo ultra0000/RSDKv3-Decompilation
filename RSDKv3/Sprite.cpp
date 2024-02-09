@@ -219,7 +219,7 @@ int AddGraphicsFile(const char *filePath)
     while (StrLength(gfxSurface[sheetID].fileName) > 0) {
         if (StrComp(gfxSurface[sheetID].fileName, sheetPath))
             return sheetID;
-        if (++sheetID == SURFACE_MAX) // Max Sheet cnt
+        if (++sheetID == SURFACE_COUNT) // Max Sheet cnt
             return 0;
     }
     byte fileExtension = (byte)sheetPath[(StrLength(sheetPath) - 1) & 0xFF];
@@ -236,7 +236,7 @@ int AddGraphicsFile(const char *filePath)
 void RemoveGraphicsFile(const char *filePath, int sheetID)
 {
     if (sheetID < 0) {
-        for (int i = 0; i < SURFACE_MAX; ++i) {
+        for (int i = 0; i < SURFACE_COUNT; ++i) {
             if (StrLength(gfxSurface[i].fileName) > 0 && StrComp(gfxSurface[i].fileName, filePath))
                 sheetID = i;
         }
@@ -248,7 +248,7 @@ void RemoveGraphicsFile(const char *filePath, int sheetID)
         int dataPosEnd   = gfxSurface[sheetID].dataPosition + gfxSurface[sheetID].height * gfxSurface[sheetID].width;
         for (int i = 0x200000 - dataPosEnd; i > 0; --i) graphicData[dataPosStart++] = graphicData[dataPosEnd++];
         gfxDataPosition -= gfxSurface[sheetID].height * gfxSurface[sheetID].width;
-        for (int i = 0; i < SURFACE_MAX; ++i) {
+        for (int i = 0; i < SURFACE_COUNT; ++i) {
             if (gfxSurface[i].dataPosition > gfxSurface[sheetID].dataPosition)
                 gfxSurface[i].dataPosition -= gfxSurface[sheetID].height * gfxSurface[sheetID].width;
         }
@@ -304,9 +304,9 @@ int LoadBMPFile(const char *filePath, byte sheetID)
             }
         }
 
-        if (gfxDataPosition >= GFXDATA_MAX) {
+        if (gfxDataPosition >= GFXDATA_SIZE) {
             gfxDataPosition = 0;
-            printLog("WARNING: Exceeded max gfx size!");
+            PrintLog("WARNING: Exceeded max gfx size!");
         }
 
         CloseFile();
@@ -379,12 +379,12 @@ int LoadGIFFile(const char *filePath, byte sheetID)
         }
 
         gfxDataPosition += surface->width * surface->height;
-        if (gfxDataPosition < GFXDATA_MAX) {
+        if (gfxDataPosition < GFXDATA_SIZE) {
             ReadGifPictureData(surface->width, surface->height, interlaced, graphicData, surface->dataPosition);
         }
         else {
             gfxDataPosition = 0;
-            printLog("WARNING: Exceeded max gfx surface size!");
+            PrintLog("WARNING: Exceeded max gfx surface size!");
         }
 
         CloseFile();
@@ -442,9 +442,9 @@ int LoadGFXFile(const char *filePath, byte sheetID)
             }
         }
 
-        if (gfxDataPosition >= GFXDATA_MAX) {
+        if (gfxDataPosition >= GFXDATA_SIZE) {
             gfxDataPosition = 0;
-            printLog("WARNING: Exceeded max gfx size!");
+            PrintLog("WARNING: Exceeded max gfx size!");
         }
 
         CloseFile();
@@ -459,7 +459,7 @@ int LoadRSVFile(const char *filePath, byte sheetID)
         GFXSurface *surface = &gfxSurface[sheetID];
         StrCopy(surface->fileName, filePath);
 
-        videoSurface         = sheetID;
+        videoSurface      = sheetID;
         currentVideoFrame = 0;
 
         byte fileBuffer = 0;
@@ -480,15 +480,15 @@ int LoadRSVFile(const char *filePath, byte sheetID)
         videoHeight += fileBuffer << 8;
 
         videoFilePos          = (int)GetFilePosition();
-        videoPlaying          = true;
+        videoPlaying          = 2; // playing rsv
         surface->width        = videoWidth;
         surface->height       = videoHeight;
         surface->dataPosition = gfxDataPosition;
         gfxDataPosition += surface->width * surface->height;
 
-        if (gfxDataPosition >= GFXDATA_MAX) {
+        if (gfxDataPosition >= GFXDATA_SIZE) {
             gfxDataPosition = 0;
-            printLog("WARNING: Exceeded max gfx size!");
+            PrintLog("WARNING: Exceeded max gfx size!");
         }
 
         return true;
