@@ -129,6 +129,13 @@ extern int DEFAULT_SCREEN_XSIZE;
 #ifdef RETRO_USE_SDL2
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
+#elif RETRO_USE_SDL1
+#define RETRO_USING_SDL1 (1)
+#define RETRO_USING_SDL2 (0)
+#else // default
+#define RETRO_USING_SDL1 (0)
+#define RETRO_USING_SDL2 (1)
+#endif
 #define RETRO_USING_SDL1_AUDIO (0)
 #define RETRO_USING_SDLMIXER   (0)
 #elif RETRO_PLATFORM == RETRO_WII
@@ -137,11 +144,6 @@ extern int DEFAULT_SCREEN_XSIZE;
 #define RETRO_USING_SDL1_AUDIO (0)
 #define RETRO_USING_SDLMIXER   (1)
 #define RETRO_USING_OPENGL (0)
-#elif defined(RETRO_USE_SDL1)
-#define RETRO_USING_SDL1 (1)
-#define RETRO_USING_SDL2 (0)
-#define RETRO_USING_SDL1_AUDIO (0)
-#define RETRO_USING_SDLMIXER   (0)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
