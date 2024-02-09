@@ -102,7 +102,8 @@ typedef unsigned int uint;
 #define DEFAULT_FULLSCREEN   false
 #elif RETRO_PLATFORM == RETRO_WII
 #define BASE_PATH            "/SonicCD/"
-#define DEFAULT_SCREEN_XSIZE 424
+// TODO: 424 (16:9) looks broken, figure out why
+#define DEFAULT_SCREEN_XSIZE 320
 #define DEFAULT_FULLSCREEN   true
 #else
 #ifndef BASE_PATH
