@@ -346,7 +346,11 @@ void InitUserdata()
 #if RETRO_PLATFORM == RETRO_WINDOWS
         ini.SetBool("Dev", "UseSteamDir", Engine.useSteamDir = false);
 #endif
+#if RETRO_PLATFORM == RETRO_WII
+        ini.SetBool("Dev", "UseHQModes", Engine.useHQModes = false);
+#else
         ini.SetBool("Dev", "UseHQModes", Engine.useHQModes = true);
+#endif
         sprintf(Engine.dataFile, "%s", "Data.rsdk");
         ini.SetString("Dev", "DataFile", Engine.dataFile);
 
@@ -457,7 +461,11 @@ void InitUserdata()
             Engine.useSteamDir = false;
 #endif
         if (!ini.GetBool("Dev", "UseHQModes", &Engine.useHQModes))
+#if RETRO_PLATFORM == RETRO_WII
+            Engine.useHQModes = false;
+#else
             Engine.useHQModes = true;
+#endif
 
         Engine.startList_Game  = Engine.startList;
         Engine.startStage_Game = Engine.startStage;
@@ -768,7 +776,7 @@ void WriteSettings()
 #endif
     ini.SetComment(
         "Dev", "UseHQComment",
-        "Determines if applicable rendering modes (such as 3D floor from special stages) will render in \"High Quality\" mode or standard mode");
+        "Determines if applicable rendering modes (such as 3D floor from special stages) will render in \"High Quality\" mode or standard mode. NOTE: BAD PERFORMANCE ON WII.");
     ini.SetBool("Dev", "UseHQModes", Engine.useHQModes);
 
     ini.SetComment("Dev", "DataFileComment", "Determines what RSDK file will be loaded");
