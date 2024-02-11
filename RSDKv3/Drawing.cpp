@@ -96,6 +96,11 @@ bool disableEnhancedScaling = false;
 bool bilinearScaling = false;
 #endif
 
+#if RETRO_PLATFORM == RETRO_WII
+#define WII_WIDTH 640
+#define WII_HEIGHT 480
+#endif
+
 int InitRenderDevice()
 {
     char gameTitle[0x40];
@@ -167,7 +172,12 @@ int InitRenderDevice()
         return 0;
     }
 
+#if RETRO_PLATFORM == RETRO_WII
+    SDL_RenderSetLogicalSize(Engine.renderer, WII_WIDTH, WII_HEIGHT);
+#else
     SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
+#endif
+
     SDL_SetRenderDrawBlendMode(Engine.renderer, SDL_BLENDMODE_BLEND);
 #endif
 
@@ -491,8 +501,12 @@ void FlipScreen()
             destScreenPos_scaled.y = std::round(yoffset);
             destScreenPos_scaled.w = std::round(screenxsize * aspectScale);
             destScreenPos_scaled.h = std::round(screenysize * aspectScale);
+#if RETRO_PLATFORM == RETRO_WII
+            SDL_RenderSetLogicalSize(Engine.renderer, WII_WIDTH, WII_HEIGHT);
+#else
             // fill the screen with the texture, making lerp work.
             SDL_RenderSetLogicalSize(Engine.renderer, Engine.windowXSize, Engine.windowYSize);
+#endif
         }
         else if (Engine.gameMode == ENGINE_VIDEOWAIT) {
             float screenAR = float(SCREEN_XSIZE) / float(SCREEN_YSIZE);
@@ -580,7 +594,9 @@ void FlipScreen()
             // finally present it
             SDL_RenderPresent(Engine.renderer);
             // reset everything just in case
+#if RETRO_PLATFORM != RETRO_WII
             SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
+#endif
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
             // putting some FLEX TAPE� on that memory leak
             SDL_DestroyTexture(texTarget);
