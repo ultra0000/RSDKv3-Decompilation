@@ -97,7 +97,7 @@ bool bilinearScaling = false;
 #endif
 
 #if RETRO_PLATFORM == RETRO_WII
-#define WII_WIDTH 640
+#define WII_WIDTH 720
 #define WII_HEIGHT 480
 #endif
 
@@ -1100,7 +1100,7 @@ void SetFullScreen(bool fs)
         width        = aspect * h;
         viewOffsetX  = abs(w - width) / 2;
         if (width > w) {
-            int gameWidth = (w / (float)h) * SCREEN_YSIZE;
+            int gameWidth = (width / (float)h) * SCREEN_YSIZE;
             if (renderType == RENDER_SW) {
                 SetScreenSize(gameWidth, (gameWidth + 9) & -0x8);
             }
