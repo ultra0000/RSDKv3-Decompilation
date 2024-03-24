@@ -3476,7 +3476,7 @@ void DrawVLineScrollLayer(int layerID)
                 int fullLayerheight = layerheight << 7;
                 for (int i = 0; i < vParallax.entryCount; ++i) {
                     vParallax.linePos[i] = yScrollOffset * vParallax.parallaxFactor[i] >> 8;
-
+                    vParallax.scrollPos[i] += vParallax.scrollSpeed[i];
                     vParallax.scrollPos[i] += vParallax.scrollPos[i] << 16;
                     if (vParallax.scrollPos[i] > fullLayerheight << 16)
                         vParallax.scrollPos[i] -= fullLayerheight << 16;
