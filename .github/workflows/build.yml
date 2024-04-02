@@ -33,7 +33,7 @@ jobs:
           mv RSDKv3.Wii.dol boot.dol
           zip v3-wii.zip boot.dol hbc-data/meta.xml hbc-data/icon.png
       - name: Upload artifact
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: v3-wii
           path: RSDKv3.Wii/v3-wii.zip
