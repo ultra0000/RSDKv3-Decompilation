@@ -18,13 +18,13 @@ jobs:
           wget https://apt.devkitpro.org/install-devkitpro-pacman
           chmod +x ./install-devkitpro-pacman
           sudo ./install-devkitpro-pacman
-          sudo dkp-pacman -Syu
+          sudo dkp-pacman -Syu --noconfirm
       - name: Install Toolchain
         run: |
-          sudo dkp-pacman -S wii-dev
+          sudo dkp-pacman -S wii-dev --noconfirm
       - name: Install Dependencies
         run: |
-          sudo dkp-pacman -S wii-sdl2 ppc-libogg ppc-libvorbis ppc-libvorbisidec ppc-libtheora
+          sudo dkp-pacman -S wii-sdl2 ppc-libogg ppc-libvorbis ppc-libvorbisidec ppc-libtheora --noconfirm
       - name: Build RSDKv3
         run: |
           cd RSDKv3.Wii
