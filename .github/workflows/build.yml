@@ -28,6 +28,7 @@ jobs:
       - name: Build RSDKv3
         run: |
           cd RSDKv3.Wii
+          source /etc/profile.d/devkit-env.sh
           make
           mkdir bin
           cp RSDKv3.Wii.elf bin/
