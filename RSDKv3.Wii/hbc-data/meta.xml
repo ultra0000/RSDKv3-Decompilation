@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+	<name>Sonic CD</name>
+	<coder>ultra0</coder>
+	<version>Wii CI Build</version>
+	<ahb_access/>
+	<short_description>Sonic CD (2011) Port</short_description>
+	<long_description>Port of the RSDKv3 decompilation.
+
+Remember to put your Data.rsdk file on either sd:/SonicCD/ or usb:/SonicCD/, depending on the storage device you're using.
+
+Decompilation made by Rubberduckycooly.</long_description>
+</app>

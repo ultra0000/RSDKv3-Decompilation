@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Install dkp-pacman
@@ -30,11 +30,10 @@ jobs:
           cd RSDKv3.Wii
           source /etc/profile.d/devkit-env.sh
           make
-          mkdir bin
-          cp RSDKv3.Wii.elf bin/
-          cp RSDKv3.Wii.dol bin/
+          mv RSDKv3.Wii.dol boot.dol
+          zip v3-wii.zip boot.dol hbc-data/meta.xml hbc-data/icon.png
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@4
         with:
           name: v3-wii
-          path: bin
+          path: RSDKv3.Wii/v3-wii.zip
