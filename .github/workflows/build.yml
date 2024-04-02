@@ -30,10 +30,11 @@ jobs:
           cd RSDKv3.Wii
           source /etc/profile.d/devkit-env.sh
           make
-          mv RSDKv3.Wii.dol boot.dol
-          zip v3-wii.zip boot.dol hbc-data/meta.xml hbc-data/icon.png
+          mkdir bin/ && mkdir bin/apps/ && mkdir bin/apps/RSDKv3/
+          cp RSDKv3.Wii.dol bin/apps/RSDKv3/boot.dol
+          cp hbc-data/* bin/apps/RSDKv3/
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: v3-wii
-          path: RSDKv3.Wii/v3-wii.zip
+          path: RSDKv3.Wii/bin
