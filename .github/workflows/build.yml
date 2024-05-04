@@ -7,28 +7,15 @@ on:
 jobs: 
   v3-wii:
     runs-on: ubuntu-latest
+    container: devkitpro/devkitppc:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Install dkp-pacman
-        run: |
-          sudo apt update
-          wget https://apt.devkitpro.org/install-devkitpro-pacman
-          chmod +x ./install-devkitpro-pacman
-          sudo ./install-devkitpro-pacman
-          sudo dkp-pacman -Syu --noconfirm
-      - name: Install Toolchain
-        run: |
-          sudo dkp-pacman -S wii-dev --noconfirm
-      - name: Install Dependencies
-        run: |
-          sudo dkp-pacman -S wii-sdl2 ppc-libogg ppc-libvorbis ppc-libvorbisidec ppc-libtheora --noconfirm
       - name: Build RSDKv3
         run: |
           cd RSDKv3.Wii
-          source /etc/profile.d/devkit-env.sh
           make
           mkdir bin/ && mkdir bin/apps/ && mkdir bin/apps/RSDKv3/
           cp RSDKv3.Wii.dol bin/apps/RSDKv3/boot.dol
