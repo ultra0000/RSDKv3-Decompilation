@@ -1964,7 +1964,7 @@ void DrawStageGFX()
     DrawObjectList(5);
 #if !RETRO_USE_ORIGINAL_CODE
     // Hacky fix for Tails Object not working properly on non-Origins bytecode
-    if (forceUseScripts || GetGlobalVariableByName("NOTIFY_1P_VS_SELECT") != 0)
+    if (forceUseScripts || Engine.usingOrigins)
 #endif
         DrawObjectList(7); // Extra Origins draw list (who knows why it comes before 6)
     DrawObjectList(6);
@@ -4842,13 +4842,13 @@ void DrawTintRectangle(int XPos, int YPos, int width, int height)
             height += YPos;
             YPos = 0;
         }
-        if (width <= 0 || height <= 0)
+        if (width < 0 || height < 0)
             return;
 
         int yOffset = GFX_LINESIZE - width;
         for (ushort *frameBufferPtr = &Engine.frameBuffer[XPos + GFX_LINESIZE * YPos];; frameBufferPtr += yOffset) {
             height--;
-            if (!height)
+            if (height < 0)
                 break;
 
             int w = width;
