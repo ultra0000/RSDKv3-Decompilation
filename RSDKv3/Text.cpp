@@ -223,7 +223,6 @@ void AddTextMenuEntry(TextMenu *menu, const char *text)
 {
     menu->entryStart[menu->rowCount]     = menu->textDataPos;
     menu->entrySize[menu->rowCount]      = 0;
-    menu->entryHighlight[menu->rowCount] = false;
     for (int i = 0; i < StrLength(text);) {
         if (text[i] != '\0') {
             menu->textData[menu->textDataPos++] = text[i];
@@ -240,7 +239,6 @@ void AddTextMenuEntryMapped(TextMenu *menu, char *text)
 {
     menu->entryStart[menu->rowCount]     = menu->textDataPos;
     menu->entrySize[menu->rowCount]      = 0;
-    menu->entryHighlight[menu->rowCount] = false;
     for (int i = 0; i < StrLength(text);) {
         if (text[i] != '\0') {
             ushort num = text[i];
@@ -271,7 +269,6 @@ void SetTextMenuEntry(TextMenu *menu, const char *text, int rowID)
 {
     menu->entryStart[rowID]              = menu->textDataPos;
     menu->entrySize[rowID]               = 0;
-    menu->entryHighlight[menu->rowCount] = false;
     for (int i = 0; i < StrLength(text);) {
         if (text[i] != '\0') {
             menu->textData[menu->textDataPos++] = text[i];
@@ -287,7 +284,6 @@ void EditTextMenuEntry(TextMenu *menu, const char *text, int rowID)
 {
     int entryPos                         = menu->entryStart[rowID];
     menu->entrySize[rowID]               = 0;
-    menu->entryHighlight[menu->rowCount] = false;
     for (int i = 0; i < StrLength(text);) {
         if (text[i] != '\0') {
             menu->textData[entryPos++] = text[i];

@@ -3676,7 +3676,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
             case FUNC_DRAWPLAYERANIMATION:
                 opcodeSize = 0;
                 if (player->visible) {
-                    if (cameraEnabled == activePlayer)
+                    if (cameraTarget == activePlayer)
                         DrawObjectAnimation(scriptInfo, entity, player->screenXPos, player->screenYPos);
                     else
                         DrawObjectAnimation(scriptInfo, entity, (player->XPos >> 16) - xScrollOffset, (player->YPos >> 16) - yScrollOffset);

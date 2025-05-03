@@ -214,6 +214,7 @@ void ProcessStageSelect()
                         StrAdd(buffer, ": ");
                         StrAdd(buffer, modList[m].active ? "  Active" : "Inactive");
                         AddTextMenuEntry(&gameMenu[1], buffer);
+                        gameMenu[1].entryHighlight[m] = false;
                     }
 
                     gameMenu[1].alignment      = 1;
