@@ -645,6 +645,13 @@ bool PlayMusic(int track)
     if (!audioEnabled)
         return false;
 
+#if !RETRO_USE_ORIGINAL_CODE
+    if (StrComp(musicTracks[track].fileName, "Data/Music/")) {
+        StopMusic();
+        return false;
+    }
+#endif
+
     if (musicTracks[track].fileName[0]) {
         if (musicStatus != MUSIC_LOADING) {
             currentMusicTrack = track;

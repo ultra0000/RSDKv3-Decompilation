@@ -308,6 +308,9 @@ enum RetroEngineCallbacks {
 
     // Sega Forever stuff
     // Mod CBs start at about 1000
+    CALLBACK_STARTGAME                        = 101,
+    CALLBACK_NONE_104                         = 104,
+    CALLBACK_SHOWURL                          = 107,
     CALLBACK_SHOWMENU_2                       = 997,
     CALLBACK_SHOWHELPCENTER                   = 998,
     CALLBACK_CHANGEADSTYPE                    = 999,

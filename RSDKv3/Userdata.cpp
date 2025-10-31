@@ -384,7 +384,7 @@ void InitUserdata()
 
 #if RETRO_USING_SDL2
         ini.SetComment("Keyboard 1", "IK1Comment",
-                       "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDLScancodeLookup.mediawiki)");
+                       "Keyboard Mappings for P1 (Based on: https://wiki.libsdl.org/SDL2/SDLScancodeLookup)");
         ini.SetInteger("Keyboard 1", "Up", inputDevice[INPUT_UP].keyMappings = SDL_SCANCODE_UP);
         ini.SetInteger("Keyboard 1", "Down", inputDevice[INPUT_DOWN].keyMappings = SDL_SCANCODE_DOWN);
         ini.SetInteger("Keyboard 1", "Left", inputDevice[INPUT_LEFT].keyMappings = SDL_SCANCODE_LEFT);
@@ -395,7 +395,7 @@ void InitUserdata()
         ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings = SDL_SCANCODE_RETURN);
 
         ini.SetComment("Controller 1", "IC1Comment",
-                       "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDL_GameControllerButton.mediawiki)");
+                       "Controller Mappings for P1 (Based on: https://rsdkmodding.com/RSDKv3/Decompilation/SettingsINI/#controller-buttons)");
         ini.SetInteger("Controller 1", "Up", inputDevice[INPUT_UP].contMappings = SDL_CONTROLLER_BUTTON_DPAD_UP);
         ini.SetInteger("Controller 1", "Down", inputDevice[INPUT_DOWN].contMappings = SDL_CONTROLLER_BUTTON_DPAD_DOWN);
         ini.SetInteger("Controller 1", "Left", inputDevice[INPUT_LEFT].contMappings = SDL_CONTROLLER_BUTTON_DPAD_LEFT);
@@ -417,7 +417,7 @@ void InitUserdata()
 #endif
 
 #if RETRO_USING_SDL1
-        ini.SetComment("Keyboard 1", "IK1Comment", "Keyboard Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_Scancode)");
+        ini.SetComment("Keyboard 1", "IK1Comment", "Keyboard Mappings for P1 (Based on: https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html)");
         ini.SetInteger("Keyboard 1", "Up", inputDevice[INPUT_UP].keyMappings = SDLK_UP);
         ini.SetInteger("Keyboard 1", "Down", inputDevice[INPUT_DOWN].keyMappings = SDLK_DOWN);
         ini.SetInteger("Keyboard 1", "Left", inputDevice[INPUT_LEFT].keyMappings = SDLK_LEFT);
@@ -428,7 +428,7 @@ void InitUserdata()
         ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings = SDLK_RETURN);
 
         ini.SetComment("Controller 1", "IC1Comment",
-                       "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL_GameControllerButton.mediawiki)");
+                       "Controller Mappings for P1");
         ini.SetInteger("Controller 1", "Up", inputDevice[INPUT_UP].contMappings = 1);
         ini.SetInteger("Controller 1", "Down", inputDevice[INPUT_DOWN].contMappings = 2);
         ini.SetInteger("Controller 1", "Left", inputDevice[INPUT_LEFT].contMappings = 3);
