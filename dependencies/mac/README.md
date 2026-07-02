@@ -37,7 +37,7 @@ If you're debugging the engine, best to just open the XCode project directly and
     * You need to have a backslash escape for every special character since this is a string.
     * It may be better to edit [Other C++ Flags](https://developer.apple.com/documentation/xcode/build-settings-reference#Other-C++-Flags) using the XCode app so you can have a better sense of what goes wrong.
 
-  * `DECOMP_VERSION` is an argument used in autobuilds to display the decomp's version number in the Dev Menu. In this case, it would be `1.3.2` already, and may not need changing.
+  * `DECOMP_VERSION` is an argument used in autobuilds to display the decomp's version number in the Dev Menu. In this case, it would be `1.3.3` already, and may not need changing.
     * You need to have a backslash escape for every special character since this is a string.
     * It may be better to edit [Other C++ Flags](https://developer.apple.com/documentation/xcode/build-settings-reference#Other-C++-Flags) using the XCode app so you can have a better sense of what goes wrong.
 

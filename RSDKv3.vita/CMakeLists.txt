@@ -1,5 +1,5 @@
 ## This file is a quick tutorial on writing CMakeLists for targeting the Vita
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
 ## This includes the Vita toolchain, must go before project definition
 # It is a convenience so you do not have to type
@@ -27,7 +27,7 @@ set(VITA_APP_NAME "Sonic CD")
 # unique string of developer and Y = a unique number for this app
 set(VITA_TITLEID  "RSDK00001")
 # Optional version string to show in LiveArea's more info screen
-set(VITA_VERSION  "1.3.2")
+set(VITA_VERSION  "1.3.3")
 
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags

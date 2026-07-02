@@ -459,7 +459,43 @@ void RetroEngine::Run()
                             if (ProcessVideo() == 1)
                                 gameMode = ENGINE_MAINGAME;
                             break;
+                            
+#if RETRO_USE_MOD_LOADER
+                        case ENGINE_INITMODMENU:
+                            Engine.LoadGameConfig("Data/Game/GameConfig.bin");
+                            InitDevMenu();
 
+                            ResetCurrentStageFolder();
+                            
+                            SetupTextMenu(&gameMenu[0], 0);
+                            AddTextMenuEntry(&gameMenu[0], "MOD LIST");
+                            SetupTextMenu(&gameMenu[1], 0);
+                            InitMods();
+
+                            char buffer[0x100];
+                            for (int m = 0; m < modList.size(); ++m) {
+                                StrCopy(buffer, modList[m].name.c_str());
+                                StrAdd(buffer, ": ");
+                                StrAdd(buffer, modList[m].active ? "  Active" : "Inactive");
+                                AddTextMenuEntry(&gameMenu[1], buffer);
+                                gameMenu[1].entryHighlight[m] = false;
+                            }
+
+                            gameMenu[1].alignment      = 1;
+                            gameMenu[1].selectionCount = 3;
+                            gameMenu[1].selection1     = 0;
+                            if (gameMenu[1].rowCount > 18)
+                                gameMenu[1].visibleRowCount = 18;
+                            else
+                                gameMenu[1].visibleRowCount = 0;
+
+                            gameMenu[0].alignment        = 2;
+                            gameMenu[0].selectionCount   = 1;
+                            gameMenu[1].timer            = 0;
+                            gameMenu[1].visibleRowOffset = 0;
+                            stageMode                    = DEVMENU_MODMENU;
+                            break;
+#endif
                         default: break;
                     }
                 }
@@ -1423,6 +1459,49 @@ void RetroEngine::Callback(int callbackID)
 #if RETRO_USE_MOD_LOADER
         case CALLBACK_SET1P: activePlayerCount = 1; break;
         case CALLBACK_SET2P: activePlayerCount = 2; break;
+        case CALLBACK_GETWINDOWINFO:
+            SetGlobalVariableByName("Engine.Fullscreen", Engine.isFullScreen);
+            SetGlobalVariableByName("Engine.Borderless", Engine.borderless);
+            SetGlobalVariableByName("Engine.VSync", Engine.vsync);
+            SetGlobalVariableByName("Engine.ScalingMode", Engine.scalingMode);
+            SetGlobalVariableByName("Engine.WindowScale", Engine.windowScale);
+            SetGlobalVariableByName("Engine.ScreenWidth", SCREEN_XSIZE);
+            SetGlobalVariableByName("Engine.HardwareRenderer", Engine.gameRenderType == "HW_Rendering");            
+            break;
+        case CALLBACK_SETWINDOWCHANGES:
+            Engine.startFullScreen = Engine.isFullScreen; // Account for f4 toggle
+            for (int v = 0; v < globalVariablesCount; ++v) {
+                if (StrComp("Engine.Fullscreen", globalVariableNames[v])){
+                    Engine.startFullScreen = globalVariables[v];
+                    Engine.isFullScreen = Engine.startFullScreen;
+                }
+                else if (StrComp("Engine.Borderless", globalVariableNames[v]))
+                    Engine.borderless = globalVariables[v];
+                else if (StrComp("Engine.VSync", globalVariableNames[v]))
+                    Engine.vsync = globalVariables[v];
+                else if (StrComp("Engine.ScalingMode", globalVariableNames[v]))
+                    Engine.scalingMode = globalVariables[v];
+                else if (StrComp("Engine.WindowScale", globalVariableNames[v]))
+                    Engine.windowScale = globalVariables[v];
+                else if (StrComp("Engine.ScreenWidth", globalVariableNames[v])){
+                    SCREEN_XSIZE = globalVariables[v];
+                    SCREEN_XSIZE_CONFIG = SCREEN_XSIZE;
+                }
+                else if (StrComp("Engine.HardwareRenderer", globalVariableNames[v]))
+                    Engine.gameRenderType = gameRenderTypes[globalVariables[v]];
+            }
+#if RETRO_USING_OPENGL
+            for (int i = 0; i < HW_TEXTURE_COUNT; ++i) {
+                glDeleteTextures(1, &gfxTextureID[i]);
+            }
+#endif
+            ReleaseRenderDevice();
+            InitRenderDevice();
+            break;
+        case CALLBACK_OPENMODMENU:
+            Engine.gameMode      = ENGINE_INITMODMENU;
+            Engine.modMenuCalled = true;
+            break;
 #endif
     }
 }
